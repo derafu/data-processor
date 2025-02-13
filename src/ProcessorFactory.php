@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Derafu: Derafu: Data Processor - Four-Phase Data Processing Library.
+ * Derafu: Data Processor - Four-Phase Data Processing Library.
  *
  * Copyright (c) 2025 Esteban De La Fuente Rubio / Derafu <https://www.derafu.org>
  * Licensed under the MIT License.
@@ -14,6 +14,7 @@ namespace Derafu\DataProcessor;
 
 use Closure;
 use Derafu\DataProcessor\Contract\ProcessorInterface;
+use Derafu\DataProcessor\Contract\RuleParserInterface;
 use Derafu\DataProcessor\Contract\RuleRegistrarInterface;
 use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
 
@@ -23,7 +24,7 @@ use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
 final class ProcessorFactory
 {
     /**
-     * Creates a new processor with, optionally, a custom configuration.
+     * Creates a new processor.
      *
      * By default it will include default rules.
      *
@@ -34,7 +35,8 @@ final class ProcessorFactory
      */
     public static function create(
         RuleRegistrarInterface|Closure|null $configurator = null,
-        bool $withDefaultRules = true
+        bool $withDefaultRules = true,
+        ?RuleParserInterface $parser = null
     ): ProcessorInterface {
         $registry = new RuleRegistry();
 
@@ -55,7 +57,12 @@ final class ProcessorFactory
 
         $resolver = new RuleResolver($registry);
 
-        return new Processor($resolver);
+        // Use default parser.
+        if ($parser === null) {
+            $parser = new RuleParser();
+        }
+
+        return new Processor($resolver, $parser);
     }
 
     /**

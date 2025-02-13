@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Derafu: Derafu: Data Processor - Four-Phase Data Processing Library.
+ * Derafu: Data Processor - Four-Phase Data Processing Library.
  *
  * Copyright (c) 2025 Esteban De La Fuente Rubio / Derafu <https://www.derafu.org>
  * Licensed under the MIT License.
@@ -26,6 +26,7 @@ use Derafu\DataProcessor\Rule\Validator\Date\DateEqualsRule;
 use Derafu\DataProcessor\Rule\Validator\Date\DateFormatRule;
 use Derafu\DataProcessor\Rule\Validator\Date\WeekdayRule;
 use Derafu\DataProcessor\Rule\Validator\Date\WeekendRule;
+use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -37,6 +38,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ProcessorFactory::class)]
 #[CoversClass(RuleRegistry::class)]
 #[CoversClass(RuleResolver::class)]
+#[CoversClass(RuleParser::class)]
 #[CoversClass(DateFormatRule::class)]
 #[CoversClass(AfterOrEqualRule::class)]
 #[CoversClass(BeforeOrEqualRule::class)]

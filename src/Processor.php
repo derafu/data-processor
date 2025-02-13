@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Derafu: Derafu: Data Processor - Four-Phase Data Processing Library.
+ * Derafu: Data Processor - Four-Phase Data Processing Library.
  *
  * Copyright (c) 2025 Esteban De La Fuente Rubio / Derafu <https://www.derafu.org>
  * Licensed under the MIT License.
@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Derafu\DataProcessor;
 
 use Derafu\DataProcessor\Contract\ProcessorInterface;
+use Derafu\DataProcessor\Contract\RuleParserInterface;
 use Derafu\DataProcessor\Contract\RuleResolverInterface;
 
 /**
@@ -23,15 +24,19 @@ use Derafu\DataProcessor\Contract\RuleResolverInterface;
 final class Processor implements ProcessorInterface
 {
     public function __construct(
-        private readonly RuleResolverInterface $resolver
+        private readonly RuleResolverInterface $resolver,
+        private readonly RuleParserInterface $parser
     ) {
     }
 
     /**
      * {@inheritDoc}
      */
-    public function process(mixed $value, array $rules): mixed
+    public function process(mixed $value, string|array $rules): mixed
     {
+        // Parse rules to ensure an array in the correct format.
+        $rules = $this->parser->parse($rules);
+
         // First, apply caster rule (only one allowed).
         if (isset($rules['cast'])) {
             [$rule, $parameters] = $this->resolver->resolve('cast', $rules['cast']);

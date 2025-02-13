@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Derafu: Derafu: Data Processor - Four-Phase Data Processing Library.
+ * Derafu: Data Processor - Four-Phase Data Processing Library.
  *
  * Copyright (c) 2025 Esteban De La Fuente Rubio / Derafu <https://www.derafu.org>
  * Licensed under the MIT License.
@@ -43,6 +43,7 @@ use Derafu\DataProcessor\Rule\Validator\Numeric\LessThanOrEqualRule;
 use Derafu\DataProcessor\Rule\Validator\String\MaxLengthRule;
 use Derafu\DataProcessor\Rule\Validator\String\MinLengthRule;
 use Derafu\DataProcessor\Rule\Validator\String\RequiredRule;
+use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -54,6 +55,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ProcessorFactory::class)]
 #[CoversClass(RuleRegistry::class)]
 #[CoversClass(RuleResolver::class)]
+#[CoversClass(RuleParser::class)]
 #[CoversClass(InRule::class)]
 #[CoversClass(IntegerRule::class)]
 #[CoversClass(RemoveCharsRule::class)]
@@ -86,6 +88,67 @@ final class ProcessorTest extends TestCase
     protected function setUp(): void
     {
         $this->processor = ProcessorFactory::create();
+    }
+
+    #[DataProvider('castingProvider')]
+    public function testCasting(mixed $input, string $rule, mixed $expected): void
+    {
+        $result = $this->processor->process($input, [
+            'cast' => $rule,
+        ]);
+
+        if ($expected instanceof Carbon) {
+            $this->assertInstanceOf(Carbon::class, $result);
+            $this->assertTrue($expected->eq($result));
+        } else {
+            $this->assertSame($expected, $result);
+        }
+    }
+
+    public static function castingProvider(): array
+    {
+        return [
+            'to_string' => [
+                123,
+                'string',
+                '123',
+            ],
+            'to_int' => [
+                '123.45',
+                'integer',
+                123,
+            ],
+            'to_float' => [
+                '123.456',
+                'float',
+                123.456,
+            ],
+            'to_float_with_precision' => [
+                '123.456',
+                'float:2',
+                123.46,
+            ],
+            'to_bool_from_string' => [
+                'true',
+                'boolean',
+                true,
+            ],
+            'to_date' => [
+                '2024-02-15',
+                'date',
+                Carbon::parse('2024-02-15')->startOfDay(),
+            ],
+            'to_datetime' => [
+                '2024-02-15 14:30:00',
+                'datetime',
+                Carbon::parse('2024-02-15 14:30:00'),
+            ],
+            'to_timestamp' => [
+                '2024-02-15 14:30:00',
+                'timestamp',
+                Carbon::parse('2024-02-15 14:30:00')->timestamp,
+            ],
+        ];
     }
 
     #[DataProvider('sanitizationProvider')]
@@ -159,67 +222,6 @@ final class ProcessorTest extends TestCase
                 'Hello123World',
                 ['regex_keep:/[0-9]+/'],
                 '123',
-            ],
-        ];
-    }
-
-    #[DataProvider('castingProvider')]
-    public function testCasting(mixed $input, string $rule, mixed $expected): void
-    {
-        $result = $this->processor->process($input, [
-            'cast' => $rule,
-        ]);
-
-        if ($expected instanceof Carbon) {
-            $this->assertInstanceOf(Carbon::class, $result);
-            $this->assertTrue($expected->eq($result));
-        } else {
-            $this->assertSame($expected, $result);
-        }
-    }
-
-    public static function castingProvider(): array
-    {
-        return [
-            'to_string' => [
-                123,
-                'string',
-                '123',
-            ],
-            'to_int' => [
-                '123.45',
-                'integer',
-                123,
-            ],
-            'to_float' => [
-                '123.456',
-                'float',
-                123.456,
-            ],
-            'to_float_with_precision' => [
-                '123.456',
-                'float:2',
-                123.46,
-            ],
-            'to_bool_from_string' => [
-                'true',
-                'boolean',
-                true,
-            ],
-            'to_date' => [
-                '2024-02-15',
-                'date',
-                Carbon::parse('2024-02-15')->startOfDay(),
-            ],
-            'to_datetime' => [
-                '2024-02-15 14:30:00',
-                'datetime',
-                Carbon::parse('2024-02-15 14:30:00'),
-            ],
-            'to_timestamp' => [
-                '2024-02-15 14:30:00',
-                'timestamp',
-                Carbon::parse('2024-02-15 14:30:00')->timestamp,
             ],
         ];
     }
@@ -326,6 +328,44 @@ final class ProcessorTest extends TestCase
         $result = $this->processor->process($result, [
             'cast' => 'integer',
             'validate' => ['required', 'gte:18', 'lte:99'],
+        ]);
+    }
+
+    public function testCompleteProcessingWithStringRules(): void
+    {
+        // Test caso exitoso.
+        $result = $this->processor->process(
+            ' Hello@#$ WORLD! ',
+            't(lowercase) c(string) s(trim|remove_chars:@#$|spaces) v(required|min_length:8|max_length:20)'
+        );
+        $this->assertSame('hello world!', $result);
+
+        // Test caso que debe fallar.
+        $this->expectException(ValidationException::class);
+        $result = $this->processor->process(
+            ' Hi@#$! ',
+            't(lowercase) c(string) s(trim|remove_chars:@#$|spaces) v(required|min_length:8|max_length:20)'
+        );
+    }
+
+    public function testCompleteProcessingWithArrayStringRules(): void
+    {
+        // Test caso exitoso.
+        $result = $this->processor->process(' Hello@#$ WORLD! ', [
+            'transform' => 'lowercase',
+            'cast' => 'string',
+            'sanitize' => 'trim|remove_chars:@#$|spaces',
+            'validate' => 'required|min_length:8|max_length:20',
+        ]);
+        $this->assertSame('hello world!', $result);
+
+        // Test caso que debe fallar.
+        $this->expectException(ValidationException::class);
+        $result = $this->processor->process(' Hi@#$! ', [
+            'transform' => 'lowercase',
+            'cast' => 'string',
+            'sanitize' => 'trim|remove_chars:@#$|spaces',
+            'validate' => 'required|min_length:8|max_length:20',
         ]);
     }
 }

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Derafu: Derafu: Data Processor - Four-Phase Data Processing Library.
+ * Derafu: Data Processor - Four-Phase Data Processing Library.
  *
  * Copyright (c) 2025 Esteban De La Fuente Rubio / Derafu <https://www.derafu.org>
  * Licensed under the MIT License.
@@ -30,6 +30,7 @@ use Derafu\DataProcessor\Rule\Validator\Internet\EmailRule;
 use Derafu\DataProcessor\Rule\Validator\Internet\HostnameRule;
 use Derafu\DataProcessor\Rule\Validator\Internet\IpRule;
 use Derafu\DataProcessor\Rule\Validator\Internet\UrlRule;
+use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -41,6 +42,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ProcessorFactory::class)]
 #[CoversClass(RuleRegistry::class)]
 #[CoversClass(RuleResolver::class)]
+#[CoversClass(RuleParser::class)]
 #[CoversClass(EmailRule::class)]
 #[CoversClass(UrlRule::class)]
 #[CoversClass(IpRule::class)]

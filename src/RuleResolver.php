@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Derafu: Derafu: Data Processor - Four-Phase Data Processing Library.
+ * Derafu: Data Processor - Four-Phase Data Processing Library.
  *
  * Copyright (c) 2025 Esteban De La Fuente Rubio / Derafu <https://www.derafu.org>
  * Licensed under the MIT License.
@@ -38,8 +38,9 @@ final class RuleResolver implements RuleResolverInterface
 
         // Get appropriate rule instance.
         $rule = match($type) {
-            'sanitize' => $this->registry->getSanitizerRule($ruleName),
+            'transform' => $this->registry->getTransformerRule($ruleName),
             'cast' => $this->registry->getCasterRule($ruleName),
+            'sanitize' => $this->registry->getSanitizerRule($ruleName),
             'validate' => $this->registry->getValidatorRule($ruleName),
             default => throw new InvalidArgumentException("Invalid rule type: {$type}")
         };

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Derafu: Derafu: Data Processor - Four-Phase Data Processing Library.
+ * Derafu: Data Processor - Four-Phase Data Processing Library.
  *
  * Copyright (c) 2025 Esteban De La Fuente Rubio / Derafu <https://www.derafu.org>
  * Licensed under the MIT License.
@@ -28,6 +28,7 @@ use Derafu\DataProcessor\Rule\Validator\Numeric\LessThanRule;
 use Derafu\DataProcessor\Rule\Validator\Numeric\MultipleOfRule;
 use Derafu\DataProcessor\Rule\Validator\Numeric\NumericRule;
 use Derafu\DataProcessor\Rule\Validator\Numeric\RangeRule;
+use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -39,6 +40,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ProcessorFactory::class)]
 #[CoversClass(RuleRegistry::class)]
 #[CoversClass(RuleResolver::class)]
+#[CoversClass(RuleParser::class)]
 #[CoversClass(NumericRule::class)]
 #[CoversClass(IntegerRule::class)]
 #[CoversClass(DecimalRule::class)]
