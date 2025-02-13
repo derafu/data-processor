@@ -1,0 +1,45 @@
+{
+    "name": "derafu/data-processor",
+    "description": "Derafu: Derafu: Data Processor - Four-Phase Data Processing Library.",
+    "type": "library",
+    "homepage": "https://derafu.org/data-processor",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Esteban De La Fuente Rubio / Derafu",
+            "homepage": "https://www.derafu.org"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/derafu/data-processor/issues",
+        "source": "https://github.com/derafu/data-processor"
+    },
+    "autoload": {
+        "psr-4": {
+            "Derafu\\DataProcessor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Derafu\\TestsDataProcessor\\": "tests/src/"
+        }
+    },
+    "require": {
+        "php": "^8.3",
+        "nesbot/carbon": "^3.8"
+    },
+    "require-dev": {
+        "ext-xdebug": "*",
+        "friendsofphp/php-cs-fixer": "^3.63",
+        "phpstan/phpstan": "^1.12",
+        "phpunit/phpunit": "^11.4"
+    },
+    "scripts": {
+        "docs": "php tools/phpdocumentor run --config=phpdoc.xml",
+        "tests": "XDEBUG_MODE=coverage vendor/bin/phpunit --configuration=phpunit.xml",
+        "phpcs-fix": "php-cs-fixer fix -v --config=php-cs-fixer.php .",
+        "phpcs-fix-dry-run": "php-cs-fixer fix -v --dry-run --diff --config=php-cs-fixer.php .",
+        "phpstan": "phpstan analyse --configuration=phpstan.neon --memory-limit=1G",
+        "phpstan-export": "phpstan analyse --configuration=phpstan.neon --level 9 --generate-baseline"
+    }
+}
