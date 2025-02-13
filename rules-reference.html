@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derafu Data Processor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-light.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css" rel="stylesheet" />
+    </head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg sticky-top bg-body-tertiary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Derafu Data Processor</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="rules-reference.html">
+                            <i class="fa-solid fa-book"></i>
+                            Rules Reference
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="custom-rules.html">
+                            <i class="fa-solid fa-book"></i>
+                            Custom Rules
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="custom-registries.html">
+                            <i class="fa-solid fa-book"></i>
+                            Custom Registries
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="custom-registrar.html">
+                            <i class="fa-solid fa-book"></i>
+                            Custom Registrar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="custom-parser.html">
+                            <i class="fa-solid fa-book"></i>
+                            Custom Parser
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="btn btn-primary ms-4" href="https://github.com/derafu/data-processor">
+                            <i class="fa-brands fa-github"></i>
+                            View on Github
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+    <div class="markdown-body"><h1><a id="content-rules-reference" href="rules-reference.html#content-rules-reference" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Rules Reference</h1>
+<h2><a id="content-cast-rules" href="rules-reference.html#content-cast-rules" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Cast Rules</h2>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>boolean</code>, <code>bool</code></td>
+<td>Convert value to boolean</td>
+<td><code>'cast' =&gt; 'boolean'</code></td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td>Convert value to Carbon date</td>
+<td><code>'cast' =&gt; 'date'</code></td>
+</tr>
+<tr>
+<td><code>datetime</code></td>
+<td>Convert value to Carbon datetime</td>
+<td><code>'cast' =&gt; 'datetime'</code></td>
+</tr>
+<tr>
+<td><code>float</code>, <code>decimal</code></td>
+<td>Convert value to float</td>
+<td><code>'cast' =&gt; 'float'</code></td>
+</tr>
+<tr>
+<td><code>integer</code>, <code>int</code></td>
+<td>Convert value to integer</td>
+<td><code>'cast' =&gt; 'integer'</code></td>
+</tr>
+<tr>
+<td><code>string</code>, <code>str</code></td>
+<td>Convert value to string</td>
+<td><code>'cast' =&gt; 'string'</code></td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>Convert value to Unix timestamp</td>
+<td><code>'cast' =&gt; 'timestamp'</code></td>
+</tr>
+</tbody>
+</table>
+<h2><a id="content-transform-rules" href="rules-reference.html#content-transform-rules" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Transform Rules</h2>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>base64_decode</code></td>
+<td>Decode base64 string</td>
+<td><code>'transform' =&gt; ['base64_decode']</code></td>
+</tr>
+<tr>
+<td><code>base64_encode</code></td>
+<td>Encode value to base64</td>
+<td><code>'transform' =&gt; ['base64_encode']</code></td>
+</tr>
+<tr>
+<td><code>json_decode</code></td>
+<td>Decode JSON string</td>
+<td><code>'transform' =&gt; ['json_decode']</code>, <code>'transform' =&gt; ['json_decode:array']</code></td>
+</tr>
+<tr>
+<td><code>json_encode</code></td>
+<td>Encode value to JSON</td>
+<td><code>'transform' =&gt; ['json_encode']</code>, <code>'transform' =&gt; ['json_encode:pretty']</code></td>
+</tr>
+<tr>
+<td><code>json_to_array</code></td>
+<td>Convert JSON string to array</td>
+<td><code>'transform' =&gt; ['json_to_array']</code></td>
+</tr>
+<tr>
+<td><code>json_to_object</code></td>
+<td>Convert JSON string to object</td>
+<td><code>'transform' =&gt; ['json_to_object']</code></td>
+</tr>
+<tr>
+<td><code>round</code></td>
+<td>Round numeric value</td>
+<td><code>'transform' =&gt; ['round:2']</code></td>
+</tr>
+<tr>
+<td><code>lowercase</code>, <code>lower</code></td>
+<td>Convert string to lowercase</td>
+<td><code>'transform' =&gt; ['lowercase']</code></td>
+</tr>
+<tr>
+<td><code>slug</code></td>
+<td>Convert string to URL friendly format</td>
+<td><code>'transform' =&gt; ['slug']</code></td>
+</tr>
+<tr>
+<td><code>transliterate</code></td>
+<td>Convert characters to ASCII</td>
+<td><code>'transform' =&gt; ['transliterate']</code></td>
+</tr>
+<tr>
+<td><code>uppercase</code>, <code>upper</code></td>
+<td>Convert string to uppercase</td>
+<td><code>'transform' =&gt; ['uppercase']</code></td>
+</tr>
+</tbody>
+</table>
+<h2><a id="content-sanitize-rules" href="rules-reference.html#content-sanitize-rules" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Sanitize Rules</h2>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>addslashes</code></td>
+<td>Add slashes before quotes</td>
+<td><code>'sanitize' =&gt; ['addslashes']</code></td>
+</tr>
+<tr>
+<td><code>htmlentities</code></td>
+<td>Convert characters to HTML entities</td>
+<td><code>'sanitize' =&gt; ['htmlentities']</code></td>
+</tr>
+<tr>
+<td><code>htmlspecialchars</code></td>
+<td>Convert special characters to HTML entities</td>
+<td><code>'sanitize' =&gt; ['htmlspecialchars']</code></td>
+</tr>
+<tr>
+<td><code>regex_keep</code></td>
+<td>Keep only characters matching pattern</td>
+<td><code>'sanitize' =&gt; ['regex_keep:/[0-9]/']</code></td>
+</tr>
+<tr>
+<td><code>regex_remove</code></td>
+<td>Remove characters matching pattern</td>
+<td><code>'sanitize' =&gt; ['regex_remove:/[^a-z]/']</code></td>
+</tr>
+<tr>
+<td><code>remove_chars</code></td>
+<td>Remove specific characters</td>
+<td><code>'sanitize' =&gt; ['remove_chars:@#$']</code></td>
+</tr>
+<tr>
+<td><code>remove_non_printable</code></td>
+<td>Remove non-printable characters</td>
+<td><code>'sanitize' =&gt; ['remove_non_printable']</code></td>
+</tr>
+<tr>
+<td><code>remove_prefix</code></td>
+<td>Remove string prefix</td>
+<td><code>'sanitize' =&gt; ['remove_prefix:http']</code></td>
+</tr>
+<tr>
+<td><code>remove_suffix</code></td>
+<td>Remove string suffix</td>
+<td><code>'sanitize' =&gt; ['remove_suffix:.txt']</code></td>
+</tr>
+<tr>
+<td><code>spaces</code></td>
+<td>Normalize multiple spaces to single</td>
+<td><code>'sanitize' =&gt; ['spaces']</code></td>
+</tr>
+<tr>
+<td><code>strip_tags</code></td>
+<td>Remove HTML and PHP tags</td>
+<td><code>'sanitize' =&gt; ['strip_tags']</code>, <code>'sanitize' =&gt; ['strip_tags:&lt;p&gt;&lt;br&gt;']</code></td>
+</tr>
+<tr>
+<td><code>substring</code></td>
+<td>Extract part of string</td>
+<td><code>'sanitize' =&gt; ['substring:5']</code>, <code>'sanitize' =&gt; ['substring:0,10']</code></td>
+</tr>
+<tr>
+<td><code>trim</code></td>
+<td>Remove whitespace from ends</td>
+<td><code>'sanitize' =&gt; ['trim']</code></td>
+</tr>
+</tbody>
+</table>
+<h2><a id="content-validate-rules" href="rules-reference.html#content-validate-rules" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Validate Rules</h2>
+<h3><a id="content-array-validation" href="rules-reference.html#content-array-validation" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Array Validation</h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>in</code>, <code>choices</code></td>
+<td>Check if value is in list</td>
+<td><code>'validate' =&gt; ['in:a,b,c']</code></td>
+</tr>
+<tr>
+<td><code>max_items</code></td>
+<td>Check array maximum length</td>
+<td><code>'validate' =&gt; ['max_items:5']</code></td>
+</tr>
+<tr>
+<td><code>min_items</code></td>
+<td>Check array minimum length</td>
+<td><code>'validate' =&gt; ['min_items:1']</code></td>
+</tr>
+<tr>
+<td><code>notempty</code></td>
+<td>Check if array is not empty</td>
+<td><code>'validate' =&gt; ['notempty']</code></td>
+</tr>
+<tr>
+<td><code>unique</code></td>
+<td>Check if array values are unique</td>
+<td><code>'validate' =&gt; ['unique']</code></td>
+</tr>
+</tbody>
+</table>
+<h3><a id="content-date-validation" href="rules-reference.html#content-date-validation" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Date Validation</h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>after</code></td>
+<td>Check if date is after another</td>
+<td><code>'validate' =&gt; ['after:2024-01-01']</code></td>
+</tr>
+<tr>
+<td><code>after_or_equal</code></td>
+<td>Check if date is after or equal</td>
+<td><code>'validate' =&gt; ['after_or_equal:2024-01-01']</code></td>
+</tr>
+<tr>
+<td><code>before</code></td>
+<td>Check if date is before another</td>
+<td><code>'validate' =&gt; ['before:2024-12-31']</code></td>
+</tr>
+<tr>
+<td><code>before_or_equal</code></td>
+<td>Check if date is before or equal</td>
+<td><code>'validate' =&gt; ['before_or_equal:2024-12-31']</code></td>
+</tr>
+<tr>
+<td><code>between</code></td>
+<td>Check if date is between two dates</td>
+<td><code>'validate' =&gt; ['between:2024-01-01,2024-12-31']</code></td>
+</tr>
+<tr>
+<td><code>date_equals</code></td>
+<td>Check if date equals another</td>
+<td><code>'validate' =&gt; ['date_equals:2024-01-01']</code></td>
+</tr>
+<tr>
+<td><code>date_format</code></td>
+<td>Check if date matches format</td>
+<td><code>'validate' =&gt; ['date_format:Y-m-d']</code></td>
+</tr>
+<tr>
+<td><code>weekday</code></td>
+<td>Check if date is weekday</td>
+<td><code>'validate' =&gt; ['weekday']</code></td>
+</tr>
+<tr>
+<td><code>weekend</code></td>
+<td>Check if date is weekend</td>
+<td><code>'validate' =&gt; ['weekend']</code></td>
+</tr>
+</tbody>
+</table>
+<h3><a id="content-file-validation" href="rules-reference.html#content-file-validation" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>File Validation</h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>file</code></td>
+<td>Validate file with size limit</td>
+<td><code>'validate' =&gt; ['file:2M']</code></td>
+</tr>
+<tr>
+<td><code>image</code></td>
+<td>Validate image file with size limit</td>
+<td><code>'validate' =&gt; ['image:2M']</code></td>
+</tr>
+<tr>
+<td><code>mimetype</code></td>
+<td>Validate file mime type</td>
+<td><code>'validate' =&gt; ['mimetype:application/pdf,image/jpeg']</code></td>
+</tr>
+</tbody>
+</table>
+<h3><a id="content-financial-validation" href="rules-reference.html#content-financial-validation" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Financial Validation</h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bic</code></td>
+<td>Validate BIC/SWIFT code</td>
+<td><code>'validate' =&gt; ['bic']</code></td>
+</tr>
+<tr>
+<td><code>card_number</code></td>
+<td>Validate credit card number</td>
+<td><code>'validate' =&gt; ['card_number']</code></td>
+</tr>
+<tr>
+<td><code>iban</code></td>
+<td>Validate IBAN</td>
+<td><code>'validate' =&gt; ['iban']</code></td>
+</tr>
+</tbody>
+</table>
+<h3><a id="content-i18n-validation" href="rules-reference.html#content-i18n-validation" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>I18n Validation</h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>country</code></td>
+<td>Validate country code</td>
+<td><code>'validate' =&gt; ['country']</code></td>
+</tr>
+<tr>
+<td><code>currency</code></td>
+<td>Validate currency code</td>
+<td><code>'validate' =&gt; ['currency']</code></td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>Validate language code</td>
+<td><code>'validate' =&gt; ['language']</code></td>
+</tr>
+<tr>
+<td><code>locale</code></td>
+<td>Validate locale code</td>
+<td><code>'validate' =&gt; ['locale']</code></td>
+</tr>
+<tr>
+<td><code>timezone</code></td>
+<td>Validate timezone identifier</td>
+<td><code>'validate' =&gt; ['timezone']</code></td>
+</tr>
+</tbody>
+</table>
+<h3><a id="content-id-validation" href="rules-reference.html#content-id-validation" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>ID Validation</h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uuid</code></td>
+<td>Validate UUID string</td>
+<td><code>'validate' =&gt; ['uuid']</code></td>
+</tr>
+</tbody>
+</table>
+<h3><a id="content-internet-validation" href="rules-reference.html#content-internet-validation" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Internet Validation</h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>email</code></td>
+<td>Validate email address</td>
+<td><code>'validate' =&gt; ['email']</code></td>
+</tr>
+<tr>
+<td><code>hostname</code></td>
+<td>Validate hostname</td>
+<td><code>'validate' =&gt; ['hostname']</code></td>
+</tr>
+<tr>
+<td><code>ip</code></td>
+<td>Validate IP address</td>
+<td><code>'validate' =&gt; ['ip']</code>, <code>'validate' =&gt; ['ip:v4']</code>, <code>'validate' =&gt; ['ip:v6']</code></td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td>Validate URL</td>
+<td><code>'validate' =&gt; ['url']</code></td>
+</tr>
+</tbody>
+</table>
+<h3><a id="content-numeric-validation" href="rules-reference.html#content-numeric-validation" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Numeric Validation</h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>decimal</code>, <code>float</code>, <code>real</code></td>
+<td>Validate decimal number</td>
+<td><code>'validate' =&gt; ['decimal:2']</code></td>
+</tr>
+<tr>
+<td><code>digits_range</code></td>
+<td>Validate number of digits range</td>
+<td><code>'validate' =&gt; ['digits_range:3,5']</code></td>
+</tr>
+<tr>
+<td><code>digits</code></td>
+<td>Validate exact number of digits</td>
+<td><code>'validate' =&gt; ['digits:4']</code></td>
+</tr>
+<tr>
+<td><code>gt</code></td>
+<td>Greater than</td>
+<td><code>'validate' =&gt; ['gt:10']</code></td>
+</tr>
+<tr>
+<td><code>gte</code>, <code>min</code></td>
+<td>Greater than or equal</td>
+<td><code>'validate' =&gt; ['gte:10']</code></td>
+</tr>
+<tr>
+<td><code>integer</code>, <code>int</code></td>
+<td>Validate integer</td>
+<td><code>'validate' =&gt; ['integer']</code></td>
+</tr>
+<tr>
+<td><code>lt</code></td>
+<td>Less than</td>
+<td><code>'validate' =&gt; ['lt:10']</code></td>
+</tr>
+<tr>
+<td><code>lte</code>, <code>max</code></td>
+<td>Less than or equal</td>
+<td><code>'validate' =&gt; ['lte:10']</code></td>
+</tr>
+<tr>
+<td><code>multiple_of</code></td>
+<td>Check if number is multiple</td>
+<td><code>'validate' =&gt; ['multiple_of:5']</code></td>
+</tr>
+<tr>
+<td><code>numeric</code></td>
+<td>Validate numeric value</td>
+<td><code>'validate' =&gt; ['numeric']</code></td>
+</tr>
+<tr>
+<td><code>range</code></td>
+<td>Validate number in range</td>
+<td><code>'validate' =&gt; ['range:1,100']</code></td>
+</tr>
+</tbody>
+</table>
+<h3><a id="content-string-validation" href="rules-reference.html#content-string-validation" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>String Validation</h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>alpha</code></td>
+<td>Only alphabetic characters</td>
+<td><code>'validate' =&gt; ['alpha']</code></td>
+</tr>
+<tr>
+<td><code>alpha_dash</code></td>
+<td>Alphanumeric with dashes/underscores</td>
+<td><code>'validate' =&gt; ['alpha_dash']</code></td>
+</tr>
+<tr>
+<td><code>alpha_num</code></td>
+<td>Only alphanumeric characters</td>
+<td><code>'validate' =&gt; ['alpha_num']</code></td>
+</tr>
+<tr>
+<td><code>base64</code></td>
+<td>Validate base64 string</td>
+<td><code>'validate' =&gt; ['base64']</code></td>
+</tr>
+<tr>
+<td><code>ends_with</code></td>
+<td>String ends with value</td>
+<td><code>'validate' =&gt; ['ends_with:Test']</code></td>
+</tr>
+<tr>
+<td><code>json</code></td>
+<td>Validate JSON string</td>
+<td><code>'validate' =&gt; ['json']</code></td>
+</tr>
+<tr>
+<td><code>length</code></td>
+<td>Exact string length</td>
+<td><code>'validate' =&gt; ['length:10']</code></td>
+</tr>
+<tr>
+<td><code>max_length</code></td>
+<td>Maximum string length</td>
+<td><code>'validate' =&gt; ['max_length:255']</code></td>
+</tr>
+<tr>
+<td><code>min_length</code></td>
+<td>Minimum string length</td>
+<td><code>'validate' =&gt; ['min_length:3']</code></td>
+</tr>
+<tr>
+<td><code>not_regex</code></td>
+<td>Not match regular expression</td>
+<td><code>'validate' =&gt; ['not_regex:/[0-9]/']</code></td>
+</tr>
+<tr>
+<td><code>no_whitespace</code></td>
+<td>No whitespace in string</td>
+<td><code>'validate' =&gt; ['no_whitespace']</code></td>
+</tr>
+<tr>
+<td><code>regex</code></td>
+<td>Match regular expression</td>
+<td><code>'validate' =&gt; ['regex:/^[A-Z]+$/']</code></td>
+</tr>
+<tr>
+<td><code>required</code></td>
+<td>Value is required</td>
+<td><code>'validate' =&gt; ['required']</code></td>
+</tr>
+<tr>
+<td><code>slug</code></td>
+<td>Validate URL friendly string</td>
+<td><code>'validate' =&gt; ['slug']</code></td>
+</tr>
+<tr>
+<td><code>starts_with</code></td>
+<td>String starts with value</td>
+<td><code>'validate' =&gt; ['starts_with:Test']</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+    <!-- Footer -->
+    <footer class="sticky-bottom py-3 bg-body-tertiary mt-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="text-body-secondary">
+                        &copy; 2025 Derafu Data Processor -
+                        <a href="https://github.com/derafu/data-processor" class="text-decoration-none">
+                            github.com/derafu/data-processor
+                        </a><br/>
+                        <small>Four-Phase Data Processing Library</small>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="text-body-secondary">
+                        With love <i class="fa-solid fa-heart text-danger"></i> from
+                        <a href="https://www.derafu.org" target="_blank" class="text-decoration-none">Derafu ORG</a><br/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></
+    </body>
+</html>

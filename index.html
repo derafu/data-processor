@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derafu Data Processor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-light.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css" rel="stylesheet" />
+    </head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg sticky-top bg-body-tertiary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Derafu Data Processor</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="rules-reference.html">
+                            <i class="fa-solid fa-book"></i>
+                            Rules Reference
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="custom-rules.html">
+                            <i class="fa-solid fa-book"></i>
+                            Custom Rules
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="custom-registries.html">
+                            <i class="fa-solid fa-book"></i>
+                            Custom Registries
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="custom-registrar.html">
+                            <i class="fa-solid fa-book"></i>
+                            Custom Registrar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="custom-parser.html">
+                            <i class="fa-solid fa-book"></i>
+                            Custom Parser
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="btn btn-primary ms-4" href="https://github.com/derafu/data-processor">
+                            <i class="fa-brands fa-github"></i>
+                            View on Github
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+    <div class="markdown-body"><h1><a id="content-derafu-data-processor---four-phase-data-processing-library" href="index.html#content-derafu-data-processor---four-phase-data-processing-library" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Derafu: Data Processor - Four-Phase Data Processing Library</h1>
+<p><a rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="https://github.com/derafu/data-processor/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/derafu/data-processor/actions/workflows/ci.yml/badge.svg?branch=main&amp;event=push" alt="CI Workflow" /></a>
+<a rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" /></a></p>
+<p>A PHP library designed to process data through four distinct phases: casting, transformation, sanitization and validation.</p>
+<h2><a id="content-what-makes-it-different" href="index.html#content-what-makes-it-different" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>What Makes it Different?</h2>
+<p>Unlike traditional validation libraries that focus solely on validation, Derafu Data Processor offers:</p>
+<ul>
+<li><strong>Clear Phase Separation</strong>: Each processing phase (cast → transform → sanitize → validate) has its own purpose and runs in a specific order.</li>
+<li><strong>Independent Transformations</strong>: A dedicated transformation layer for complex data conversions, separate from basic type casting.</li>
+<li><strong>Type-Safe Operations</strong>: Strong typing and clear error handling in each phase.</li>
+<li><strong>Extensible Rule System</strong>: Each type of rule (caster, transformer, sanitizer, validator) follows its own interface.</li>
+<li><strong>Almost Zero Dependencies</strong>: just <code>intl</code> extension for specific format rules and <code>Carbon</code> for dates.</li>
+</ul>
+<h2><a id="content-features" href="index.html#content-features" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Features</h2>
+<ul>
+<li>
+<p>🎯 <strong>Type-Safe Casting</strong>: Convert between data types safely.</p>
+<ul>
+<li>Basic types (string, int, float, bool).</li>
+<li>Date and time handling.</li>
+</ul>
+</li>
+<li>
+<p>🔄 <strong>Data Transformations</strong>: Complex data conversions.</p>
+<ul>
+<li>Base64 encoding/decoding.</li>
+<li>JSON processing.</li>
+<li>Slug generation.</li>
+<li>Character transliteration.</li>
+</ul>
+</li>
+<li>
+<p>🧹 <strong>Rich Sanitization Rules</strong>: Clean and normalize input data.</p>
+<ul>
+<li>String sanitization (trim, strip_tags, substring, etc.).</li>
+<li>Regex-based cleaning (regex_remove, regex_keep).</li>
+<li>HTML entity handling (htmlspecialchars, htmlentities, etc.).</li>
+<li>Character set manipulation (remove_non_printable, remove_chars, etc.).</li>
+</ul>
+</li>
+<li>
+<p>✅ <strong>Comprehensive Validation</strong>: Various validation rules.</p>
+<ul>
+<li>String validations (required, min_length, max_length, etc.).</li>
+<li>Number validations (range, gte, lte, etc.).</li>
+<li>Date validations (after, before, between, etc.).</li>
+<li>Format validations (email, URL, UUID, etc.).</li>
+<li>File validations (file, image, mime_types).</li>
+<li>Array validations (min_items, max_items, not_empty, etc.).</li>
+</ul>
+</li>
+</ul>
+<h2><a id="content-installation" href="index.html#content-installation" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Installation</h2>
+<pre><code class="language-bash">composer require derafu/data-processor
+</code></pre>
+<h2><a id="content-basic-usage" href="index.html#content-basic-usage" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Basic Usage</h2>
+<pre><code class="language-php">use Derafu\DataProcessor\ProcessorFactory;
+
+$processor = ProcessorFactory::create();
+
+// Simple validation.
+$result = $processor-&gt;process('test@example.com', [
+    'validate' =&gt; ['email'],
+]);
+
+// Multi-phase processing.
+$result = $processor-&gt;process(' TEST@EXAMPLE.COM ', [
+    'transform' =&gt; ['lowercase'],
+    'sanitize' =&gt; ['trim'],
+    'validate' =&gt; ['email', 'max_length:255'],
+]);
+
+// Array validation.
+$result = $processor-&gt;process([1, 2, 2, 3], [
+    'validate' =&gt; ['unique', 'max_items:5'],
+]);
+
+// File validation.
+$result = $processor-&gt;process($_FILES['upload'], [
+    'validate' =&gt; ['file:2M', 'mime_types:application/pdf,image/jpeg']
+]);
+</code></pre>
+<h2><a id="content-contributing" href="index.html#content-contributing" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Contributing</h2>
+<p>Contributions are welcome! Please feel free to submit a Pull Request.</p>
+<h2><a id="content-license" href="index.html#content-license" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>License</h2>
+<p>This library is licensed under the MIT License. See the <code>LICENSE</code> file for more details.</p>
+</div>
+</div>
+
+    <!-- Footer -->
+    <footer class="sticky-bottom py-3 bg-body-tertiary mt-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="text-body-secondary">
+                        &copy; 2025 Derafu Data Processor -
+                        <a href="https://github.com/derafu/data-processor" class="text-decoration-none">
+                            github.com/derafu/data-processor
+                        </a><br/>
+                        <small>Four-Phase Data Processing Library</small>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="text-body-secondary">
+                        With love <i class="fa-solid fa-heart text-danger"></i> from
+                        <a href="https://www.derafu.org" target="_blank" class="text-decoration-none">Derafu ORG</a><br/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></
+    </body>
+</html>
