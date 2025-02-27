@@ -33,7 +33,7 @@ final class CustomRuleParser implements RuleParserInterface
         return [
             'transform' => ['rule1', 'rule2'],
             'sanitize' => ['rule3'],
-            'validate' => ['required', 'email']
+            'validate' => ['required', 'email'],
         ];
     }
 
@@ -65,7 +65,7 @@ $result = $processor->process('test@example.com', 't(lowercase) s(trim) required
 $result = $processor->process('test@example.com', [
     'transform' => 'lowercase',
     'sanitize' => 'trim',
-    'validate' => 'required|email'
+    'validate' => 'required|email',
 ]);
 ```
 

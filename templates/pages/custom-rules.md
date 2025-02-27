@@ -77,6 +77,6 @@ $processor->process('field', $value, [
     'transform' => ['custom_transform'],
     'sanitize' => ['custom_sanitize'],
     'cast' => 'custom_cast',
-    'validate' => ['custom_validate']
+    'validate' => ['custom_validate'],
 ]);
 ```
