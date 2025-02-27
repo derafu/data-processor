@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derafu: Data Processor - Four-Phase Data Processing Library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-light.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css" rel="stylesheet" />
+    <link href="https://derafu.org/foundation/css/styles.min.css" rel="stylesheet" />
+    </head>
+<body class="derafu-theme-earthstone">
+                <div id="header-container" class="sticky-top"></div>
+    
+            <div class="container">
+            <div class="row">
+                <main class="col-md-9">
+                    <div class="container py-4">
+    <div class="markdown-body"><h1><a id="content-creating-custom-rules" href="custom-rules.html#content-creating-custom-rules" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Creating Custom Rules</h1>
+<h2><a id="content-custom-transform-rule" href="custom-rules.html#content-custom-transform-rule" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Custom Transform Rule</h2>
+<pre><code class="language-php">use Derafu\DataProcessor\Contract\TransformerRuleInterface;
+
+final class CustomTransformRule implements TransformerRuleInterface
+{
+    public function transform(mixed $value, array $parameters = []): mixed
+    {
+        // Your transformation logic here.
+    }
+}
+
+// Register the rule.
+$registry-&gt;addTransformerRule('custom_transform', CustomTransformRule::class);
+</code></pre>
+<h2><a id="content-custom-sanitizer-rule" href="custom-rules.html#content-custom-sanitizer-rule" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Custom Sanitizer Rule</h2>
+<pre><code class="language-php">use Derafu\DataProcessor\Contract\SanitizerRuleInterface;
+
+final class CustomSanitizerRule implements SanitizerRuleInterface
+{
+    public function sanitize(mixed $value, array $parameters = []): mixed
+    {
+        // Your sanitization logic here.
+    }
+}
+
+// Register the rule.
+$registry-&gt;addSanitizerRule('custom_sanitize', CustomSanitizerRule::class);
+</code></pre>
+<h2><a id="content-custom-cast-rule" href="custom-rules.html#content-custom-cast-rule" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Custom Cast Rule</h2>
+<pre><code class="language-php">use Derafu\DataProcessor\Contract\CasterRuleInterface;
+
+final class CustomCastRule implements CasterRuleInterface
+{
+    public function cast(mixed $value, array $parameters = []): mixed
+    {
+        // Your casting logic here.
+    }
+}
+
+// Register the rule.
+$registry-&gt;addCasterRule('custom_cast', CustomCastRule::class);
+</code></pre>
+<h2><a id="content-custom-validator-rule" href="custom-rules.html#content-custom-validator-rule" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Custom Validator Rule</h2>
+<pre><code class="language-php">use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
+
+final class CustomValidatorRule implements ValidatorRuleInterface
+{
+    public function validate(mixed $value, array $parameters = []): void
+    {
+        // Your validation logic here.
+    }
+}
+
+// Register the rule.
+$registry-&gt;addValidatorRule('custom_validate', CustomValidatorRule::class);
+</code></pre>
+<h2><a id="content-using-custom-rules" href="custom-rules.html#content-using-custom-rules" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Using Custom Rules</h2>
+<p>Once registered, you can use your custom rules just like built-in ones:</p>
+<pre><code class="language-php">$processor-&gt;process('field', $value, [
+    'transform' =&gt; ['custom_transform'],
+    'sanitize' =&gt; ['custom_sanitize'],
+    'cast' =&gt; 'custom_cast',
+    'validate' =&gt; ['custom_validate'],
+]);
+</code></pre>
+</div>
+</div>
+                </main>
+                <div class="col-md-2 py-4">
+                    <div class="list-group mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                              <div class="fw-bold">Package Info</div>
+                              <span class="smal text-muted">derafu/data-processor</span>
+                            </div>
+                        </li>
+                        <a href="index.html" class="list-group-item list-group-item-action ">
+                            README
+                        </a>
+                    </div>
+                    <div class="list-group mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                            <div class="fw-bold">Docs</div>
+                            <span class="smal text-muted">Guides & Examples</span>
+                            </div>
+                        </li>
+                        <a href="rules-reference.html" class="list-group-item list-group-item-action ">
+                            Rules Reference
+                        </a>
+                        <a href="custom-registries.html" class="list-group-item list-group-item-action ">
+                            Creating Custom Registries
+                        </a>
+                        <a href="custom-rules.html" class="list-group-item list-group-item-action active">
+                            Creating Custom Rules
+                        </a>
+                        <a href="custom-registrar.html" class="list-group-item list-group-item-action ">
+                            Creating Custom Rule Registrar
+                        </a>
+                        <a href="custom-parser.html" class="list-group-item list-group-item-action ">
+                            Creating Custom Rule Parser
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+            <div id="footer-container"></div>
+<script src="https://derafu.org/foundation/js/derafu.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    </body>
+</html>

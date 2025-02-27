@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derafu: Data Processor - Four-Phase Data Processing Library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-light.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css" rel="stylesheet" />
+    <link href="https://derafu.org/foundation/css/styles.min.css" rel="stylesheet" />
+    </head>
+<body class="derafu-theme-earthstone">
+                <div id="header-container" class="sticky-top"></div>
+    
+            <div class="container">
+            <div class="row">
+                <main class="col-md-9">
+                    <div class="container py-4">
+    <div class="markdown-body"><h1><a id="content-creating-custom-rule-parser" href="custom-parser.html#content-creating-custom-rule-parser" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Creating Custom Rule Parser</h1>
+<p>You can create your own rule parser to customize how rules are parsed from strings or arrays:</p>
+<pre><code class="language-php">use Derafu\DataProcessor\Contract\RuleParserInterface;
+
+final class CustomRuleParser implements RuleParserInterface
+{
+    public function parse(string|array $rules): array
+    {
+        if (is_array($rules)) {
+            return $this-&gt;parseArray($rules);
+        }
+        return $this-&gt;parseString($rules);
+    }
+
+    private function parseArray(array $rules): array
+    {
+        // Your array parsing logic here.
+        $parsed = [];
+        foreach ($rules as $type =&gt; $typeRules) {
+            // Handle different formats for rules.
+            $parsed[$type] = $this-&gt;parseTypeRules($typeRules);
+        }
+        return $parsed;
+    }
+
+    private function parseString(string $rules): array
+    {
+        // Your string parsing logic here.
+        // Example: parse rules like &quot;t(rule1|rule2) s(rule3) required|email&quot;
+        return [
+            'transform' =&gt; ['rule1', 'rule2'],
+            'sanitize' =&gt; ['rule3'],
+            'validate' =&gt; ['required', 'email'],
+        ];
+    }
+
+    private function parseTypeRules(string|array $rules): array|string
+    {
+        // Handle parsing of individual rule types.
+        if (is_string($rules)) {
+            return explode('|', $rules);
+        }
+        return $rules;
+    }
+}
+
+// Usage with processor factory.
+$processor = ProcessorFactory::create(
+    parser: new CustomRuleParser()
+);
+
+// Or manual instantiation.
+$registry = new RuleRegistry(); // Then register the rules you need.
+$resolver = new RuleResolver($registry);
+$parser = new CustomRuleParser();
+$processor = new Processor($resolver, $parser);
+
+// Using your custom parser.
+$result = $processor-&gt;process('test@example.com', 't(lowercase) s(trim) required|email');
+
+// Or.
+$result = $processor-&gt;process('test@example.com', [
+    'transform' =&gt; 'lowercase',
+    'sanitize' =&gt; 'trim',
+    'validate' =&gt; 'required|email',
+]);
+</code></pre>
+<p>This allows you to:</p>
+<ul>
+<li>Create custom rule parsing formats.</li>
+<li>Support different string formats for rules.</li>
+<li>Add custom shorthand notations.</li>
+<li>Implement domain-specific rule syntax.</li>
+<li>Handle complex rule configurations.</li>
+</ul>
+</div>
+</div>
+                </main>
+                <div class="col-md-2 py-4">
+                    <div class="list-group mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                              <div class="fw-bold">Package Info</div>
+                              <span class="smal text-muted">derafu/data-processor</span>
+                            </div>
+                        </li>
+                        <a href="index.html" class="list-group-item list-group-item-action ">
+                            README
+                        </a>
+                    </div>
+                    <div class="list-group mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                            <div class="fw-bold">Docs</div>
+                            <span class="smal text-muted">Guides & Examples</span>
+                            </div>
+                        </li>
+                        <a href="rules-reference.html" class="list-group-item list-group-item-action ">
+                            Rules Reference
+                        </a>
+                        <a href="custom-registries.html" class="list-group-item list-group-item-action ">
+                            Creating Custom Registries
+                        </a>
+                        <a href="custom-rules.html" class="list-group-item list-group-item-action ">
+                            Creating Custom Rules
+                        </a>
+                        <a href="custom-registrar.html" class="list-group-item list-group-item-action ">
+                            Creating Custom Rule Registrar
+                        </a>
+                        <a href="custom-parser.html" class="list-group-item list-group-item-action active">
+                            Creating Custom Rule Parser
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+            <div id="footer-container"></div>
+<script src="https://derafu.org/foundation/js/derafu.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    </body>
+</html>

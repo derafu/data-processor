@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derafu: Data Processor - Four-Phase Data Processing Library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-light.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css" rel="stylesheet" />
+    <link href="https://derafu.org/foundation/css/styles.min.css" rel="stylesheet" />
+    </head>
+<body class="derafu-theme-earthstone">
+                <div id="header-container" class="sticky-top"></div>
+    
+            <div class="container">
+            <div class="row">
+                <main class="col-md-9">
+                    <div class="container py-4">
+    <div class="markdown-body"><h1><a id="content-creating-custom-rule-registrar" href="custom-registrar.html#content-creating-custom-rule-registrar" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Creating Custom Rule Registrar</h1>
+<p>For better organization, you can create a custom rule registrar:</p>
+<pre><code class="language-php">use Derafu\DataProcessor\Contract\RuleRegistryInterface;
+
+final class CustomRuleRegistrar implements RuleRegistrarInterface
+{
+    public function register(RuleRegistryInterface $registry): void
+    {
+        // Register transform rules.
+        $registry
+            -&gt;addTransformRule('custom_transform_1', CustomTransform1Rule::class)
+            -&gt;addTransformRule('custom_transform_2', CustomTransform2Rule::class);
+
+        // Register sanitizer rules.
+        $registry
+            -&gt;addSanitizerRule('custom_sanitize_1', CustomSanitize1Rule::class)
+            -&gt;addSanitizerRule('custom_sanitize_2', CustomSanitize2Rule::class);
+
+        // Register caster rules.
+        $registry
+            -&gt;addCasterRule('custom_type_1', CustomType1Rule::class)
+            -&gt;addCasterRule('custom_type_2', CustomType2Rule::class);
+
+        // Register validator rules.
+        $registry
+            -&gt;addValidatorRule('custom_validate_1', CustomValidate1Rule::class)
+            -&gt;addValidatorRule('custom_validate_2', CustomValidate2Rule::class);
+    }
+}
+
+// Usage.
+$processor = ProcessorFactory::create(
+    new CustomRuleRegistrar(),
+    withDefaultRules: false // Create without default rules using the factory.
+);
+</code></pre>
+<p>This allows you to:</p>
+<ul>
+<li>Create domain-specific rule sets.</li>
+<li>Override default rules with custom implementations.</li>
+<li>Group related rules together.</li>
+<li>Control which rules are available in your application.</li>
+</ul>
+</div>
+</div>
+                </main>
+                <div class="col-md-2 py-4">
+                    <div class="list-group mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                              <div class="fw-bold">Package Info</div>
+                              <span class="smal text-muted">derafu/data-processor</span>
+                            </div>
+                        </li>
+                        <a href="index.html" class="list-group-item list-group-item-action ">
+                            README
+                        </a>
+                    </div>
+                    <div class="list-group mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                            <div class="fw-bold">Docs</div>
+                            <span class="smal text-muted">Guides & Examples</span>
+                            </div>
+                        </li>
+                        <a href="rules-reference.html" class="list-group-item list-group-item-action ">
+                            Rules Reference
+                        </a>
+                        <a href="custom-registries.html" class="list-group-item list-group-item-action ">
+                            Creating Custom Registries
+                        </a>
+                        <a href="custom-rules.html" class="list-group-item list-group-item-action ">
+                            Creating Custom Rules
+                        </a>
+                        <a href="custom-registrar.html" class="list-group-item list-group-item-action active">
+                            Creating Custom Rule Registrar
+                        </a>
+                        <a href="custom-parser.html" class="list-group-item list-group-item-action ">
+                            Creating Custom Rule Parser
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+            <div id="footer-container"></div>
+<script src="https://derafu.org/foundation/js/derafu.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    </body>
+</html>
