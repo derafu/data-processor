@@ -1,7 +1,11 @@
 # Derafu: Data Processor - Four-Phase Data Processing Library
 
-[![CI Workflow](https://github.com/derafu/data-processor/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/derafu/data-processor/actions/workflows/ci.yml?query=branch%3Amain)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+![GitHub last commit](https://img.shields.io/github/last-commit/derafu/data-processor/main)
+![CI Workflow](https://github.com/derafu/data-processor/actions/workflows/ci.yml/badge.svg?branch=main&event=push)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/derafu/data-processor)
+![GitHub Issues](https://img.shields.io/github/issues-raw/derafu/data-processor)
+![Total Downloads](https://poser.pugx.org/derafu/data-processor/downloads)
+![Monthly Downloads](https://poser.pugx.org/derafu/data-processor/d/monthly)
 
 A PHP library designed to process data through four distinct phases: casting, transformation, sanitization and validation.
 

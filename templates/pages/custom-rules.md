@@ -1,5 +1,22 @@
 # Creating Custom Rules
 
+## Custom Cast Rule
+
+```php
+use Derafu\DataProcessor\Contract\CasterRuleInterface;
+
+final class CustomCastRule implements CasterRuleInterface
+{
+    public function cast(mixed $value, array $parameters = []): mixed
+    {
+        // Your casting logic here.
+    }
+}
+
+// Register the rule.
+$registry->addCasterRule('custom_cast', CustomCastRule::class);
+```
+
 ## Custom Transform Rule
 
 ```php
@@ -34,23 +51,6 @@ final class CustomSanitizerRule implements SanitizerRuleInterface
 $registry->addSanitizerRule('custom_sanitize', CustomSanitizerRule::class);
 ```
 
-## Custom Cast Rule
-
-```php
-use Derafu\DataProcessor\Contract\CasterRuleInterface;
-
-final class CustomCastRule implements CasterRuleInterface
-{
-    public function cast(mixed $value, array $parameters = []): mixed
-    {
-        // Your casting logic here.
-    }
-}
-
-// Register the rule.
-$registry->addCasterRule('custom_cast', CustomCastRule::class);
-```
-
 ## Custom Validator Rule
 
 ```php
@@ -74,9 +74,9 @@ Once registered, you can use your custom rules just like built-in ones:
 
 ```php
 $processor->process('field', $value, [
+    'cast' => 'custom_cast',
     'transform' => ['custom_transform'],
     'sanitize' => ['custom_sanitize'],
-    'cast' => 'custom_cast',
     'validate' => ['custom_validate'],
 ]);
 ```

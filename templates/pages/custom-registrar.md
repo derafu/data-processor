@@ -9,6 +9,11 @@ final class CustomRuleRegistrar implements RuleRegistrarInterface
 {
     public function register(RuleRegistryInterface $registry): void
     {
+        // Register caster rules.
+        $registry
+            ->addCasterRule('custom_type_1', CustomType1Rule::class)
+            ->addCasterRule('custom_type_2', CustomType2Rule::class);
+
         // Register transform rules.
         $registry
             ->addTransformRule('custom_transform_1', CustomTransform1Rule::class)
@@ -18,11 +23,6 @@ final class CustomRuleRegistrar implements RuleRegistrarInterface
         $registry
             ->addSanitizerRule('custom_sanitize_1', CustomSanitize1Rule::class)
             ->addSanitizerRule('custom_sanitize_2', CustomSanitize2Rule::class);
-
-        // Register caster rules.
-        $registry
-            ->addCasterRule('custom_type_1', CustomType1Rule::class)
-            ->addCasterRule('custom_type_2', CustomType2Rule::class);
 
         // Register validator rules.
         $registry
