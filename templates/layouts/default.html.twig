@@ -18,8 +18,17 @@
                     <div class="list-group mb-4">
                         <li class="list-group-item d-flex justify-content-between align-items-start">
                             <div class="ms-2 me-auto">
-                              <div class="fw-bold">Package Info</div>
-                              <span class="smal text-muted">derafu/data-processor</span>
+                                <div class="fw-bold">Package Info</div>
+                                <span class="smal text-muted">
+                                    <a href="https://github.com/derafu/data-processor" target="_blank" class="link-secondary text-decoration-none">
+                                        <i class="fa-brands fa-github"></i>
+                                        derafu/data-processor
+                                    </a>
+                                </span>
+                                <div class="my-2">
+                                    <img src="https://img.shields.io/github/stars/derafu/data-processor" alt="GitHub Repo stars">
+                                    <img src="https://img.shields.io/github/forks/derafu/data-processor" alt="GitHub forks">
+                                </div>
                             </div>
                         </li>
                         <a href="/" class="list-group-item list-group-item-action {% if request.uri.path == '/' %}active{% endif %}">
