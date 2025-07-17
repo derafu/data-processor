@@ -1,0 +1,13 @@
+services:
+
+    Derafu\DataProcessor\Contract\ProcessorInterface:
+        factory: ['Derafu\DataProcessor\ProcessorFactory', 'create']
+
+    Derafu\DataProcessor\Contract\RuleResolverInterface:
+        class: Derafu\DataProcessor\RuleResolver
+
+    Derafu\DataProcessor\Contract\RuleRegistryInterface:
+        class: Derafu\DataProcessor\RuleRegistry
+
+    Derafu\DataProcessor\Contract\RuleParserInterface:
+        class: Derafu\DataProcessor\RuleParser
