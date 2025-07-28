@@ -61,12 +61,63 @@ final class Processor implements ProcessorInterface
 
         // Finally apply validator rules.
         if (isset($rules['validate'])) {
-            foreach ((array)$rules['validate'] as $ruleString) {
+            $validationRules = (array)$rules['validate'];
+
+            // Check if nullable rule is present to determine if empty values should be allowed.
+            $hasRequiredRule = $this->hasRequiredRule($validationRules);
+
+            foreach ($validationRules as $ruleString) {
                 [$rule, $parameters] = $this->resolver->resolve('validate', $ruleString);
+
+                // If not required rules is enabled and value is empty, skip
+                // all the rules except the required rule.
+                if (!$hasRequiredRule && $this->isEmptyValue($value) && !$this->isRequiredRule($ruleString)) {
+                    continue;
+                }
+
                 $rule->validate($value, $parameters);
             }
         }
 
         return $value;
+    }
+
+    /**
+     * Checks if the validation rules contain a required rule.
+     *
+     * @param array $validationRules The validation rules to check.
+     * @return bool True if required rule is present, false otherwise.
+     */
+    private function hasRequiredRule(array $validationRules): bool
+    {
+        foreach ($validationRules as $ruleString) {
+            if (str_starts_with($ruleString, 'required')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if a rule string represents a required rule.
+     *
+     * @param string $ruleString The rule string to check.
+     * @return bool True if it's a required rule, false otherwise.
+     */
+    private function isRequiredRule(string $ruleString): bool
+    {
+        return str_starts_with($ruleString, 'required');
+    }
+
+    /**
+     * Checks if a value is considered empty for nullable validation.
+     *
+     * @param mixed $value The value to check.
+     * @return bool True if the value is empty, false otherwise.
+     */
+    private function isEmptyValue(mixed $value): bool
+    {
+        return $value === null || $value === '';
     }
 }

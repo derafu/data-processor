@@ -38,6 +38,7 @@ use Derafu\DataProcessor\Rule\Sanitizer\TrimRule;
 use Derafu\DataProcessor\Rule\Transformer\Json\JsonToArrayRule;
 use Derafu\DataProcessor\Rule\Transformer\String\LowercaseRule;
 use Derafu\DataProcessor\Rule\Validator\Array\InRule;
+use Derafu\DataProcessor\Rule\Validator\Internet\EmailRule;
 use Derafu\DataProcessor\Rule\Validator\Numeric\GreaterThanOrEqualRule;
 use Derafu\DataProcessor\Rule\Validator\Numeric\LessThanOrEqualRule;
 use Derafu\DataProcessor\Rule\Validator\String\MaxLengthRule;
@@ -56,6 +57,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RuleRegistry::class)]
 #[CoversClass(RuleResolver::class)]
 #[CoversClass(RuleParser::class)]
+#[CoversClass(EmailRule::class)]
 #[CoversClass(InRule::class)]
 #[CoversClass(IntegerRule::class)]
 #[CoversClass(RemoveCharsRule::class)]
@@ -367,5 +369,135 @@ final class ProcessorTest extends TestCase
             'sanitize' => 'trim|remove_chars:@#$|spaces',
             'validate' => 'required|min_length:8|max_length:20',
         ]);
+    }
+
+    #[DataProvider('notRequiredValidationDataProvider')]
+    public function testNotRequiredValidation(mixed $value, string|array $rules, bool $shouldPass): void
+    {
+        if (!$shouldPass) {
+            $this->expectException(ValidationException::class);
+        }
+
+        $result = $this->processor->process($value, $rules);
+
+        if ($shouldPass) {
+            $this->assertSame($value, $result);
+        }
+    }
+
+    public static function notRequiredValidationDataProvider(): array
+    {
+        return [
+            'not_required_email_with_empty_value' => [
+                '',
+                ['validate' => ['email']],
+                true,
+            ],
+            'not_required_email_with_null_value' => [
+                null,
+                ['validate' => ['email']],
+                true,
+            ],
+            'not_required_email_with_valid_email' => [
+                'test@example.com',
+                ['validate' => ['email']],
+                true,
+            ],
+            'not_required_email_with_invalid_email' => [
+                'invalid-email',
+                ['validate' => ['email']],
+                false,
+            ],
+            'not_required_min_length_with_empty_value' => [
+                '',
+                ['validate' => ['min_length:5']],
+                true,
+            ],
+            'not_required_min_length_with_short_value' => [
+                'abc',
+                ['validate' => ['min_length:5']],
+                false,
+            ],
+            'not_required_min_length_with_valid_value' => [
+                'abcdef',
+                ['validate' => ['min_length:5']],
+                true,
+            ],
+            'not_required_required_with_empty_value' => [
+                '',
+                ['validate' => ['required']],
+                false,
+            ],
+            'not_required_required_with_valid_value' => [
+                'test',
+                ['validate' => ['required']],
+                true,
+            ],
+            'not_required_with_multiple_rules_empty_value' => [
+                '',
+                ['validate' => ['email', 'min_length:5', 'max_length:50']],
+                true,
+            ],
+            'not_required_with_multiple_rules_valid_value' => [
+                'test@example.com',
+                ['validate' => ['email', 'min_length:5', 'max_length:50']],
+                true,
+            ],
+            'not_required_with_multiple_rules_invalid_value' => [
+                'invalid',
+                ['validate' => ['email', 'min_length:5', 'max_length:50']],
+                false,
+            ],
+            'not_required_email_with_empty_value' => [
+                '',
+                ['validate' => ['email']],
+                true,
+            ],
+            'not_required_min_length_with_empty_value' => [
+                '',
+                ['validate' => ['min_length:5']],
+                true,
+            ],
+        ];
+    }
+
+    public function testNotRequiredRuleAlone(): void
+    {
+        // Test that not required rule (none rules) allows empty values.
+        $result = $this->processor->process('', ['validate' => []]);
+        $this->assertSame('', $result);
+
+        $result = $this->processor->process(null, ['validate' => []]);
+        $this->assertNull($result);
+    }
+
+    public function testNotRequiredRuleWithCasting(): void
+    {
+        // Test that not required rule works with casting rules.
+        $result = $this->processor->process('', [
+            'cast' => 'string',
+            'validate' => ['min_length:5'],
+        ]);
+        $this->assertSame('', $result);
+    }
+
+    public function testNotRequiredRuleWithTransformation(): void
+    {
+        // Test that not required rule works with transformation rules.
+        $result = $this->processor->process('', [
+            'transform' => ['uppercase'],
+            'validate' => ['min_length:5'],
+        ]);
+        $this->assertSame('', $result);
+    }
+
+    public function testNotRequiredRuleWithSanitization(): void
+    {
+        // Test that not required rule works with sanitization rules.
+        $result = $this->processor->process('', [
+            'sanitize' => ['trim'],
+            'validate' => ['min_length:5'],
+        ]);
+        $this->assertSame('', $result);
     }
 }
