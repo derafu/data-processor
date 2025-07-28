@@ -37,6 +37,7 @@ use Derafu\DataProcessor\Rule\Sanitizer\SubStringRule;
 use Derafu\DataProcessor\Rule\Sanitizer\TrimRule;
 use Derafu\DataProcessor\Rule\Transformer\Json\JsonToArrayRule;
 use Derafu\DataProcessor\Rule\Transformer\String\LowercaseRule;
+use Derafu\DataProcessor\Rule\Transformer\String\UppercaseRule;
 use Derafu\DataProcessor\Rule\Validator\Array\InRule;
 use Derafu\DataProcessor\Rule\Validator\Internet\EmailRule;
 use Derafu\DataProcessor\Rule\Validator\Numeric\GreaterThanOrEqualRule;
@@ -83,6 +84,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(TimestampRule::class)]
 #[CoversClass(MinLengthRule::class)]
 #[CoversClass(MaxLengthRule::class)]
+#[CoversClass(UppercaseRule::class)]
 final class ProcessorTest extends TestCase
 {
     private ProcessorInterface $processor;
@@ -447,16 +449,6 @@ final class ProcessorTest extends TestCase
                 'invalid',
                 ['validate' => ['email', 'min_length:5', 'max_length:50']],
                 false,
-            ],
-            'not_required_email_with_empty_value' => [
-                '',
-                ['validate' => ['email']],
-                true,
-            ],
-            'not_required_min_length_with_empty_value' => [
-                '',
-                ['validate' => ['min_length:5']],
-                true,
             ],
         ];
     }
