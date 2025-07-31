@@ -14,22 +14,52 @@ namespace Derafu\DataProcessor\Rule\Validator\File;
 
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
+// use Psr\Http\Message\UploadedFileInterface;
 
 abstract class AbstractFileRule implements ValidatorRuleInterface
 {
     protected function validateFileArray(mixed $value): void
     {
-        if (!is_array($value)) {
-            throw new ValidationException('Value must be a file array.');
-        }
+        // // Check if PSR-7 UploadedFileInterface is available.
+        // if (class_exists(UploadedFileInterface::class)) {
+        //     // PSR-7 UploadedFileInterface (single file).
+        //     if ($value instanceof UploadedFileInterface) {
+        //         if ($value->getError() !== UPLOAD_ERR_OK) {
+        //             throw new ValidationException('Uploaded file has error.');
+        //         }
+        //         return;
+        //     }
 
-        if (!isset($value['tmp_name'])) {
-            throw new ValidationException('File array must contain tmp_name.');
-        }
+        //     // Array of PSR-7 UploadedFileInterface.
+        //     if (is_array($value) && isset($value[0]) && $value[0] instanceof UploadedFileInterface) {
+        //         foreach ($value as $file) {
+        //             $this->validateFileArray($file); // Recursive.
+        //         }
+        //         return;
+        //     }
+        // }
 
-        if (!file_exists($value['tmp_name'])) {
-            throw new ValidationException('File does not exist.');
-        }
+        // // $_FILES simple.
+        // if (is_array($value) && isset($value['tmp_name'])) {
+        //     if (!is_string($value['tmp_name']) || !file_exists($value['tmp_name'])) {
+        //         throw new ValidationException('File does not exist.');
+        //     }
+        //     if (!isset($value['error']) || $value['error'] !== UPLOAD_ERR_OK) {
+        //         throw new ValidationException('File has upload error.');
+        //     }
+        //     return;
+        // }
+
+        // // $_FILES multiple.
+        // if (is_array($value)) {
+        //     foreach ($value as $v) {
+        //         $this->validateFileArray($v); // Recursive.
+        //     }
+        //     return;
+        // }
+
+        // // Any other case.
+        // throw new ValidationException('Invalid file format.');
     }
 
     protected function parseSize(string $size): int
