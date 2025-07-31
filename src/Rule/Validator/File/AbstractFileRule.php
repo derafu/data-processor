@@ -14,6 +14,7 @@ namespace Derafu\DataProcessor\Rule\Validator\File;
 
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
+
 // use Psr\Http\Message\UploadedFileInterface;
 
 abstract class AbstractFileRule implements ValidatorRuleInterface
