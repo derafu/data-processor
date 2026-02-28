@@ -25,15 +25,16 @@
         }
     },
     "require": {
-        "php": "^8.3",
+        "php": "^8.5",
         "ext-intl": "*",
         "nesbot/carbon": "^3.8"
     },
     "require-dev": {
         "ext-xdebug": "*",
-        "friendsofphp/php-cs-fixer": "^3.63",
+        "friendsofphp/php-cs-fixer": "^3.94",
         "phpstan/phpstan": "^1.12",
-        "phpunit/phpunit": "^11.4"
+        "phpunit/phpunit": "^11.5",
+        "psr/http-message": "^2.0"
     },
     "scripts": {
         "docs": "php tools/phpdocumentor run --config=phpdoc.xml",
