@@ -22,6 +22,7 @@ use Derafu\DataProcessor\Rule\Validator\Date\AfterOrEqualRule;
 use Derafu\DataProcessor\Rule\Validator\Date\AfterRule;
 use Derafu\DataProcessor\Rule\Validator\Date\BeforeOrEqualRule;
 use Derafu\DataProcessor\Rule\Validator\Date\BeforeRule;
+use Derafu\DataProcessor\Rule\Validator\Date\BetweenRule;
 use Derafu\DataProcessor\Rule\Validator\Date\DateEqualsRule;
 use Derafu\DataProcessor\Rule\Validator\Date\DateFormatRule;
 use Derafu\DataProcessor\Rule\Validator\Date\WeekdayRule;
@@ -42,6 +43,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DateFormatRule::class)]
 #[CoversClass(AfterOrEqualRule::class)]
 #[CoversClass(BeforeOrEqualRule::class)]
+#[CoversClass(BetweenRule::class)]
 #[CoversClass(DateEqualsRule::class)]
 #[CoversClass(AfterRule::class)]
 #[CoversClass(BeforeRule::class)]
@@ -299,6 +301,63 @@ final class DateValidationTest extends TestCase
             'invalid_weekend' => [
                 '2024-02-15', // Thursday.
                 ['weekend'],
+                false,
+            ],
+        ];
+    }
+
+    #[DataProvider('betweenValidationProvider')]
+    public function testBetweenValidation(string $input, array $rules, bool $shouldPass): void
+    {
+        if (!$shouldPass) {
+            $this->expectException(ValidationException::class);
+        }
+
+        $result = $this->processor->process($input, [
+            'validate' => $rules,
+        ]);
+
+        if ($shouldPass) {
+            $this->assertSame($input, $result);
+        }
+    }
+
+    public static function betweenValidationProvider(): array
+    {
+        return [
+            'valid_between_middle' => [
+                '2024-02-15',
+                ['between:2024-02-01,2024-02-29'],
+                true,
+            ],
+            'valid_between_lower_bound' => [
+                '2024-02-01',
+                ['between:2024-02-01,2024-02-29'],
+                true,
+            ],
+            'valid_between_upper_bound' => [
+                '2024-02-29',
+                ['between:2024-02-01,2024-02-29'],
+                true,
+            ],
+            'invalid_between_before_range' => [
+                '2024-01-31',
+                ['between:2024-02-01,2024-02-29'],
+                false,
+            ],
+            'invalid_between_after_range' => [
+                '2024-03-01',
+                ['between:2024-02-01,2024-02-29'],
+                false,
+            ],
+            'invalid_between_missing_params' => [
+                '2024-02-15',
+                ['between:2024-02-01'],
+                false,
+            ],
+            'invalid_between_bad_date_value' => [
+                'not-a-date',
+                ['between:2024-02-01,2024-02-29'],
                 false,
             ],
         ];

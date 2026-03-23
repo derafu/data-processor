@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Derafu\TestsDataProcessor\Rule\Validator\File;
 
 use Derafu\DataProcessor\Exception\ValidationException;
+use Derafu\DataProcessor\Rule\Validator\File\AbstractFileRule;
 use Derafu\DataProcessor\Rule\Validator\File\FileRule;
 use Derafu\DataProcessor\Rule\Validator\File\ImageRule;
 use Derafu\DataProcessor\Rule\Validator\File\MimeTypeRule;
@@ -20,7 +21,9 @@ use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\UploadedFileInterface;
 
+#[CoversClass(AbstractFileRule::class)]
 #[CoversClass(ImageRule::class)]
 #[CoversClass(FileRule::class)]
 #[CoversClass(MimeTypeRule::class)]
@@ -46,7 +49,7 @@ final class FileValidationTest extends TestCase
         rmdir($this->tempDir);
     }
 
-    private function createTempFile(string $name, string $content = ''): string
+    private function createTempFile(string $name, string $content = 'x'): string
     {
         $path = $this->tempDir . '/' . $name;
         file_put_contents($path, $content);
@@ -54,10 +57,13 @@ final class FileValidationTest extends TestCase
         return $path;
     }
 
+    // -------------------------------------------------------------------------
+    // Tests for $_FILES simple format (single file).
+    // -------------------------------------------------------------------------
+
     #[DataProvider('fileValidationProvider')]
     public function testFileValidation(array $file, array $rules, bool $shouldPass): void
     {
-        // Crear archivo temporal real
         $tempPath = $this->createTempFile(basename($file['tmp_name']));
         $file['tmp_name'] = $tempPath;
 
@@ -65,7 +71,7 @@ final class FileValidationTest extends TestCase
             'image' => new ImageRule(),
             'file' => new FileRule(),
             'mimetype' => new MimeTypeRule(),
-            default => throw new LogicException('Rule ' . $rules[0] . 'does not exist.')
+            default => throw new LogicException('Rule ' . $rules[0] . ' does not exist.')
         };
 
         if (!$shouldPass) {
@@ -75,7 +81,7 @@ final class FileValidationTest extends TestCase
         $rule->validate($file, array_slice($rules, 1));
 
         if ($shouldPass) {
-            $this->assertTrue(true); // Llegó aquí sin excepción.
+            $this->assertTrue(true);
         }
     }
 
@@ -87,6 +93,7 @@ final class FileValidationTest extends TestCase
                     'tmp_name' => 'test.jpg',
                     'type' => 'image/jpeg',
                     'size' => 1024 * 1024,
+                    'error' => UPLOAD_ERR_OK,
                 ],
                 ['image', '2M'],
                 true,
@@ -96,6 +103,7 @@ final class FileValidationTest extends TestCase
                     'tmp_name' => 'test.txt',
                     'type' => 'text/plain',
                     'size' => 1024,
+                    'error' => UPLOAD_ERR_OK,
                 ],
                 ['image', '2M'],
                 false,
@@ -105,6 +113,7 @@ final class FileValidationTest extends TestCase
                     'tmp_name' => 'test.pdf',
                     'type' => 'application/pdf',
                     'size' => 1024 * 1024,
+                    'error' => UPLOAD_ERR_OK,
                 ],
                 ['file', '2M'],
                 true,
@@ -114,6 +123,7 @@ final class FileValidationTest extends TestCase
                     'tmp_name' => 'test.pdf',
                     'type' => 'application/pdf',
                     'size' => 3 * 1024 * 1024,
+                    'error' => UPLOAD_ERR_OK,
                 ],
                 ['file', '2M'],
                 false,
@@ -122,6 +132,7 @@ final class FileValidationTest extends TestCase
                 [
                     'tmp_name' => 'test.pdf',
                     'type' => 'application/pdf',
+                    'error' => UPLOAD_ERR_OK,
                 ],
                 ['mimetype', 'application/pdf,application/x-pdf'],
                 true,
@@ -130,10 +141,187 @@ final class FileValidationTest extends TestCase
                 [
                     'tmp_name' => 'test.exe',
                     'type' => 'application/x-msdownload',
+                    'error' => UPLOAD_ERR_OK,
                 ],
                 ['mimetype', 'application/pdf,application/x-pdf'],
                 false,
             ],
         ];
+    }
+
+    // -------------------------------------------------------------------------
+    // Tests for validateFileArray() via a concrete subclass.
+    // -------------------------------------------------------------------------
+
+    private function makeConcreteRule(): AbstractFileRule
+    {
+        return new class () extends AbstractFileRule {
+            public function validate(mixed $value, array $parameters = []): void
+            {
+                $this->validateFileArray($value);
+            }
+        };
+    }
+
+    public function testFilesSimpleUploadError(): void
+    {
+        $rule = $this->makeConcreteRule();
+        $this->expectException(ValidationException::class);
+        $rule->validate([
+            'tmp_name' => '/tmp/nonexistent.tmp',
+            'error' => UPLOAD_ERR_INI_SIZE,
+        ]);
+    }
+
+    public function testFilesSimpleFileNotExist(): void
+    {
+        $rule = $this->makeConcreteRule();
+        $this->expectException(ValidationException::class);
+        $rule->validate([
+            'tmp_name' => '/tmp/this_file_does_not_exist_' . uniqid() . '.tmp',
+            'error' => UPLOAD_ERR_OK,
+        ]);
+    }
+
+    public function testFilesSimpleValid(): void
+    {
+        $rule = $this->makeConcreteRule();
+        $path = $this->createTempFile('valid.txt');
+        $rule->validate(['tmp_name' => $path, 'error' => UPLOAD_ERR_OK]);
+        $this->assertTrue(true);
+    }
+
+    public function testFilesNativeMultipleValid(): void
+    {
+        $rule = $this->makeConcreteRule();
+        $path1 = $this->createTempFile('multi1.txt');
+        $path2 = $this->createTempFile('multi2.txt');
+        $rule->validate([
+            'tmp_name' => [$path1, $path2],
+            'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK],
+        ]);
+        $this->assertTrue(true);
+    }
+
+    public function testFilesNativeMultipleUploadError(): void
+    {
+        $rule = $this->makeConcreteRule();
+        $path1 = $this->createTempFile('multi1.txt');
+        $this->expectException(ValidationException::class);
+        $rule->validate([
+            'tmp_name' => [$path1, '/tmp/nonexistent.tmp'],
+            'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_INI_SIZE],
+        ]);
+    }
+
+    public function testFilesNativeMultipleFileNotExist(): void
+    {
+        $rule = $this->makeConcreteRule();
+        $path1 = $this->createTempFile('multi1.txt');
+        $this->expectException(ValidationException::class);
+        $rule->validate([
+            'tmp_name' => [$path1, '/tmp/this_file_does_not_exist_' . uniqid() . '.tmp'],
+            'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK],
+        ]);
+    }
+
+    public function testNormalizedMultipleValid(): void
+    {
+        $rule = $this->makeConcreteRule();
+        $path1 = $this->createTempFile('norm1.txt');
+        $path2 = $this->createTempFile('norm2.txt');
+        $rule->validate([
+            ['tmp_name' => $path1, 'error' => UPLOAD_ERR_OK],
+            ['tmp_name' => $path2, 'error' => UPLOAD_ERR_OK],
+        ]);
+        $this->assertTrue(true);
+    }
+
+    public function testNormalizedMultipleUploadError(): void
+    {
+        $rule = $this->makeConcreteRule();
+        $path1 = $this->createTempFile('norm1.txt');
+        $this->expectException(ValidationException::class);
+        $rule->validate([
+            ['tmp_name' => $path1, 'error' => UPLOAD_ERR_OK],
+            ['tmp_name' => '/tmp/nope.tmp', 'error' => UPLOAD_ERR_INI_SIZE],
+        ]);
+    }
+
+    public function testInvalidFormatNonArray(): void
+    {
+        $rule = $this->makeConcreteRule();
+        $this->expectException(ValidationException::class);
+        $rule->validate('not-an-array');
+    }
+
+    public function testInvalidFormatBadArray(): void
+    {
+        $rule = $this->makeConcreteRule();
+        $this->expectException(ValidationException::class);
+        $rule->validate(['foo' => 'bar']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Tests for PSR-7 UploadedFileInterface.
+    // -------------------------------------------------------------------------
+
+    public function testPsr7SingleFileValid(): void
+    {
+        $mock = $this->createMock(UploadedFileInterface::class);
+        $mock->method('getError')->willReturn(UPLOAD_ERR_OK);
+
+        $rule = $this->makeConcreteRule();
+        $rule->validate($mock);
+        $this->assertTrue(true);
+    }
+
+    public function testPsr7SingleFileWithError(): void
+    {
+        $mock = $this->createMock(UploadedFileInterface::class);
+        $mock->method('getError')->willReturn(UPLOAD_ERR_INI_SIZE);
+
+        $rule = $this->makeConcreteRule();
+        $this->expectException(ValidationException::class);
+        $rule->validate($mock);
+    }
+
+    public function testPsr7MultipleFilesValid(): void
+    {
+        $mock1 = $this->createMock(UploadedFileInterface::class);
+        $mock1->method('getError')->willReturn(UPLOAD_ERR_OK);
+        $mock2 = $this->createMock(UploadedFileInterface::class);
+        $mock2->method('getError')->willReturn(UPLOAD_ERR_OK);
+
+        $rule = $this->makeConcreteRule();
+        $rule->validate([$mock1, $mock2]);
+        $this->assertTrue(true);
+    }
+
+    public function testPsr7MultipleFilesWithError(): void
+    {
+        $mock1 = $this->createMock(UploadedFileInterface::class);
+        $mock1->method('getError')->willReturn(UPLOAD_ERR_OK);
+        $mock2 = $this->createMock(UploadedFileInterface::class);
+        $mock2->method('getError')->willReturn(UPLOAD_ERR_INI_SIZE);
+
+        $rule = $this->makeConcreteRule();
+        $this->expectException(ValidationException::class);
+        $rule->validate([$mock1, $mock2]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Tests for parseSize().
+    // -------------------------------------------------------------------------
+
+    public function testParseSizeInvalidUnit(): void
+    {
+        $rule = new FileRule();
+        $path = $this->createTempFile('size.txt');
+        $this->expectException(ValidationException::class);
+        $rule->validate(
+            ['tmp_name' => $path, 'error' => UPLOAD_ERR_OK, 'size' => 100],
+            ['1X']
+        );
     }
 }

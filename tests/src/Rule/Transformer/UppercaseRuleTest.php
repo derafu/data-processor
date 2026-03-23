@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Derafu\TestsDataProcessor\Rule\Transformer;
 
+use Derafu\DataProcessor\Exception\TransformationException;
 use Derafu\DataProcessor\Rule\Transformer\String\UppercaseRule;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -36,9 +37,8 @@ final class UppercaseRuleTest extends TestCase
 
     public function testNonStringValue(): void
     {
-        $value = 123;
-        $result = $this->rule->transform($value);
-        $this->assertSame($value, $result);
+        $this->expectException(TransformationException::class);
+        $this->rule->transform(123);
     }
 
     public static function uppercaseDataProvider(): array
