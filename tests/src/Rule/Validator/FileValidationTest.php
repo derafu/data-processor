@@ -262,6 +262,16 @@ final class FileValidationTest extends TestCase
         $rule->validate(['foo' => 'bar']);
     }
 
+    public function testEmptyArrayThrowsInvalidFormat(): void
+    {
+        // The validator itself has no concept of "optional" — an empty array
+        // is currently an invalid format. Skipping for optional fields is the
+        // pipeline's responsibility (Processor::isEmptyValue).
+        $rule = $this->makeConcreteRule();
+        $this->expectException(ValidationException::class);
+        $rule->validate([]);
+    }
+
     // -------------------------------------------------------------------------
     // Tests for PSR-7 UploadedFileInterface.
     // -------------------------------------------------------------------------

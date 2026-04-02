@@ -450,6 +450,21 @@ final class ProcessorTest extends TestCase
                 ['validate' => ['email', 'min_length:5', 'max_length:50']],
                 false,
             ],
+            'not_required_file_with_empty_array' => [
+                [],
+                ['validate' => ['file']],
+                true,
+            ],
+            'not_required_image_with_empty_array' => [
+                [],
+                ['validate' => ['image']],
+                true,
+            ],
+            'not_required_mimetype_with_empty_array' => [
+                [],
+                ['validate' => ['mimetype:image/jpeg']],
+                true,
+            ],
         ];
     }
 
