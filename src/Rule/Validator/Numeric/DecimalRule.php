@@ -29,7 +29,7 @@ final class DecimalRule implements ValidatorRuleInterface
 
         $decimals = explode('.', (string)$value)[1] ?? '';
 
-        // Si hay dos parámetros, es un rango (min,max).
+        // Two parameters means a range (min,max).
         if (isset($parameters[1])) {
             $minDecimals = (int)$parameters[0];
             $maxDecimals = (int)$parameters[1];
@@ -42,7 +42,7 @@ final class DecimalRule implements ValidatorRuleInterface
                 ]);
             }
         } else {
-            // Un solo parámetro indica exactitud decimal.
+            // A single parameter means an exact number of decimals.
             $exactDecimals = (int)$parameters[0];
             if (strlen($decimals) !== $exactDecimals) {
                 throw new ValidationException([

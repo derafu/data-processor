@@ -24,12 +24,12 @@ final class TimezoneRule implements ValidatorRuleInterface
             throw new ValidationException('Value must be a string.');
         }
 
-        // Validar identificadores de zona horaria estándar,
+        // Validate standard timezone identifiers,
         if (in_array($value, DateTimeZone::listIdentifiers())) {
             return;
         }
 
-        // Validar offsets UTC,
+        // Validate UTC offsets,
         if (preg_match('/^UTC[+-]\d{1,2}$/', $value)) {
             $offset = (int)substr($value, 4);
             if ($offset >= -12 && $offset <= 14) {

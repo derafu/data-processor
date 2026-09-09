@@ -23,12 +23,12 @@ final class HostnameRule implements ValidatorRuleInterface
             throw new ValidationException('Value must be a string.');
         }
 
-        // Permitir localhost.
+        // Allow localhost.
         if ($value === 'localhost') {
             return;
         }
 
-        // Convertir a ASCII para manejar nombres de dominio internacionalizados.
+        // Convert to ASCII to handle internationalized domain names.
         if (function_exists('idn_to_ascii')) {
             $value = idn_to_ascii($value) ?: $value;
         }
@@ -40,12 +40,12 @@ final class HostnameRule implements ValidatorRuleInterface
             throw new ValidationException('Invalid hostname format.');
         }
 
-        // Verificar longitud máxima.
+        // Check maximum length.
         if (strlen($value) > 253) {
             throw new ValidationException('Hostname too long.');
         }
 
-        // Verificar longitud de cada parte.
+        // Check the length of each part.
         foreach (explode('.', $value) as $part) {
             if (strlen($part) > 63) {
                 throw new ValidationException('Hostname part too long.');

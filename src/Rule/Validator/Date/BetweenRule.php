@@ -33,7 +33,7 @@ final class BetweenRule implements ValidatorRuleInterface
             throw new ValidationException('Invalid date format.');
         }
 
-        if (!$date->between($from, $to, true)) { // true para que sea inclusivo.
+        if (!$date->between($from, $to, true)) { // true to make it inclusive.
             throw new ValidationException([
                 'Date must be between {from} and {to}.',
                 'from' => $from->toDateString(),

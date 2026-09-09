@@ -23,22 +23,22 @@ final class SlugRule implements TransformerRuleInterface
             throw new TransformationException('Value must be string.');
         }
 
-        // Convertir a ASCII.
+        // Convert to ASCII.
         $value = transliterator_transliterate('Any-Latin; Latin-ASCII', $value);
         if ($value === false) {
             throw new TransformationException('Error converting the value to ASCII.');
         }
 
-        // Convertir a minúsculas.
+        // Convert to lowercase.
         $value = mb_strtolower($value);
 
-        // Reemplazar espacios y caracteres especiales por guiones.
+        // Replace spaces and special characters with dashes.
         $value = preg_replace('/[^a-z0-9-]/', '-', $value);
 
-        // Eliminar guiones múltiples.
+        // Remove multiple consecutive dashes.
         $value = preg_replace('/-+/', '-', $value);
 
-        // Eliminar guiones al inicio y final.
+        // Trim leading and trailing dashes.
         return trim($value, '-');
     }
 }

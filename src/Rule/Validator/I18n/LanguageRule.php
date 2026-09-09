@@ -32,7 +32,7 @@ final class LanguageRule implements ValidatorRuleInterface
             throw new ValidationException('Value must be a string.');
         }
 
-        // Aceptar códigos de idioma con región (ej: es_CL).
+        // Accept language codes with a region (e.g. es_CL).
         $languageCode = explode('_', $value)[0];
 
         if (!in_array(strtolower($languageCode), $this->languages)) {

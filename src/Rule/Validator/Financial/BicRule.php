@@ -40,7 +40,7 @@ final class BicRule implements ValidatorRuleInterface
             throw new ValidationException('Invalid BIC format.');
         }
 
-        // Verificar código de país,
+        // Check country code,
         $countryCode = substr($value, 4, 2);
         if (!in_array($countryCode, $this->countries)) {
             throw new ValidationException('Invalid country code in BIC.');

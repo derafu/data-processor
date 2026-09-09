@@ -58,7 +58,7 @@ final class DateValidationTest extends TestCase
     protected function setUp(): void
     {
         $this->processor = ProcessorFactory::create();
-        // Fijar una fecha "actual" para los tests.
+        // Fix a "current" date for the tests.
         $this->now = Carbon::create(2024, 2, 15, 12, 0, 0);
         Carbon::setTestNow($this->now);
     }

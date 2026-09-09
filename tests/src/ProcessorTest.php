@@ -337,14 +337,14 @@ final class ProcessorTest extends TestCase
 
     public function testCompleteProcessingWithStringRules(): void
     {
-        // Test caso exitoso.
+        // Successful case test.
         $result = $this->processor->process(
             ' Hello@#$ WORLD! ',
             't(lowercase) c(string) s(trim|remove_chars:@#$|spaces) v(required|min_length:8|max_length:20)'
         );
         $this->assertSame('hello world!', $result);
 
-        // Test caso que debe fallar.
+        // Test case that should fail.
         $this->expectException(ValidationException::class);
         $result = $this->processor->process(
             ' Hi@#$! ',
@@ -354,7 +354,7 @@ final class ProcessorTest extends TestCase
 
     public function testCompleteProcessingWithArrayStringRules(): void
     {
-        // Test caso exitoso.
+        // Successful case test.
         $result = $this->processor->process(' Hello@#$ WORLD! ', [
             'transform' => 'lowercase',
             'cast' => 'string',
@@ -363,7 +363,7 @@ final class ProcessorTest extends TestCase
         ]);
         $this->assertSame('hello world!', $result);
 
-        // Test caso que debe fallar.
+        // Test case that should fail.
         $this->expectException(ValidationException::class);
         $result = $this->processor->process(' Hi@#$! ', [
             'transform' => 'lowercase',

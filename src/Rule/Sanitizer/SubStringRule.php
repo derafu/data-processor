@@ -27,12 +27,12 @@ final class SubStringRule implements SanitizerRuleInterface
             throw new SanitizationException('Length parameter must be specified.');
         }
 
-        // Si hay dos parámetros, el primero es start y el segundo length.
+        // Two parameters means the first is start and the second is length.
         if (isset($parameters[1])) {
             return mb_substr($value, (int)$parameters[0], (int)$parameters[1]);
         }
 
-        // Si hay un parámetro, es length (start = 0).
+        // A single parameter means length (start = 0).
         return mb_substr($value, 0, (int)$parameters[0]);
     }
 }

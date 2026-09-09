@@ -32,7 +32,7 @@ final class MultipleOfRule implements ValidatorRuleInterface
             throw new ValidationException('Multiple cannot be zero.');
         }
 
-        // Uso de fmod para soportar decimales.
+        // Use fmod to support decimals.
         if (fmod((float)$value, $multiple) !== 0.0) {
             throw new ValidationException([
                 'Must be a multiple of {value}.',

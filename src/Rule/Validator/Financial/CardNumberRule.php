@@ -23,15 +23,15 @@ final class CardNumberRule implements ValidatorRuleInterface
             throw new ValidationException('Value must be a string.');
         }
 
-        // Eliminar espacios y guiones.
+        // Remove spaces and dashes.
         $number = preg_replace('/\D/', '', $value);
 
-        // Verificar longitud.
+        // Check length.
         if (strlen($number) < 13 || strlen($number) > 19) {
             throw new ValidationException('Invalid card number length.');
         }
 
-        // Algoritmo de Luhn.
+        // Luhn algorithm.
         $sum = 0;
         $length = strlen($number);
         $parity = $length % 2;

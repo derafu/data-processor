@@ -23,18 +23,18 @@ final class IbanRule implements ValidatorRuleInterface
             throw new ValidationException('Value must be a string.');
         }
 
-        // Eliminar espacios y convertir a mayúsculas.
+        // Remove spaces and convert to uppercase.
         $iban = strtoupper(str_replace(' ', '', $value));
 
-        // Verificar formato básico.
+        // Check basic format.
         if (!preg_match('/^[A-Z]{2}[0-9A-Z]{2,}$/', $iban)) {
             throw new ValidationException('Invalid IBAN format.');
         }
 
-        // Mover los primeros 4 caracteres al final.
+        // Move the first 4 characters to the end.
         $moved = substr($iban, 4) . substr($iban, 0, 4);
 
-        // Convertir letras a números (A=10, B=11, etc).
+        // Convert letters to numbers (A=10, B=11, etc).
         $converted = '';
         for ($i = 0; $i < strlen($moved); $i++) {
             $char = $moved[$i];
@@ -45,7 +45,7 @@ final class IbanRule implements ValidatorRuleInterface
             }
         }
 
-        // Verificar módulo 97.
+        // Check modulo 97.
         if (bcmod($converted, '97') !== '1') {
             throw new ValidationException('Invalid IBAN checksum.');
         }
