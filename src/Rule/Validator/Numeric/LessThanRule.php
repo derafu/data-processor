@@ -28,9 +28,10 @@ final class LessThanRule implements ValidatorRuleInterface
         }
 
         if ((float)$value >= (float)$parameters[0]) {
-            throw new ValidationException(
-                sprintf('Must be less than %s.', $parameters[0])
-            );
+            throw new ValidationException([
+                'Must be less than {value}.',
+                'value' => $parameters[0],
+            ]);
         }
     }
 }

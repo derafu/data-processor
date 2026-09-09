@@ -32,7 +32,7 @@ final class RequiredRuleTest extends TestCase
     public function testValidRequired(mixed $value): void
     {
         $this->rule->validate($value);
-        $this->assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     #[DataProvider('invalidRequiredDataProvider')]

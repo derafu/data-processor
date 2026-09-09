@@ -32,9 +32,10 @@ final class BeforeRule implements ValidatorRuleInterface
                 : Carbon::parse($parameters[0]);
 
             if (!$date->isBefore($comparison)) {
-                throw new ValidationException(
-                    sprintf('Must be before %s.', $comparison->toDateTimeString())
-                );
+                throw new ValidationException([
+                    'Must be before {date}.',
+                    'date' => $comparison->toDateTimeString(),
+                ]);
             }
         } catch (InvalidFormatException $e) {
             throw new ValidationException('Invalid date format.');

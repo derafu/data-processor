@@ -11,3 +11,11 @@ services:
 
     Derafu\DataProcessor\Contract\RuleParserInterface:
         class: Derafu\DataProcessor\RuleParser
+
+    # Aporta resources/translations al TranslationResourceRegistrar de la
+    # app consumidora (que debe importar translation-services.yaml de
+    # derafu/translation y tener su propio Translator/registrar armados).
+    # El tag es explícito porque _instanceof no se propaga entre archivos
+    # importados.
+    Derafu\DataProcessor\Translation\DataProcessorTranslationResourceProvider:
+        tags: ['derafu_translation.resource_provider']

@@ -25,9 +25,10 @@ final class JsonRule implements ValidatorRuleInterface
 
         json_decode($value);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new ValidationException(
-                'String must be valid JSON: ' . json_last_error_msg()
-            );
+            throw new ValidationException([
+                'String must be valid JSON: {reason}',
+                'reason' => json_last_error_msg(),
+            ]);
         }
     }
 }

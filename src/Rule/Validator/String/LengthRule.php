@@ -30,9 +30,10 @@ final class LengthRule implements ValidatorRuleInterface
         $length = (int)$parameters[0];
 
         if (mb_strlen($value) !== $length) {
-            throw new ValidationException(
-                sprintf('Must be exactly %d characters.', $length)
-            );
+            throw new ValidationException([
+                'Must be exactly {length} characters.',
+                'length' => $length,
+            ]);
         }
     }
 }

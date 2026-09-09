@@ -32,7 +32,7 @@ final class MinLengthRuleTest extends TestCase
     public function testValidMinLength(mixed $value, array $parameters): void
     {
         $this->rule->validate($value, $parameters);
-        $this->assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     #[DataProvider('invalidMinLengthDataProvider')]

@@ -32,9 +32,11 @@ final class DigitsRangeRule implements ValidatorRuleInterface
         $max = (int)$parameters[1];
 
         if ($length < $min || $length > $max) {
-            throw new ValidationException(
-                sprintf('Must have between %d and %d digits.', $min, $max)
-            );
+            throw new ValidationException([
+                'Must have between {min} and {max} digits.',
+                'min' => $min,
+                'max' => $max,
+            ]);
         }
     }
 }

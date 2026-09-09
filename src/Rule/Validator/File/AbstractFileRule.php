@@ -59,14 +59,16 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
             foreach ($value['tmp_name'] as $index => $tmpName) {
                 $error = $value['error'][$index] ?? UPLOAD_ERR_NO_FILE;
                 if ($error !== UPLOAD_ERR_OK) {
-                    throw new ValidationException(
-                        sprintf('File at index %d has upload error.', $index)
-                    );
+                    throw new ValidationException([
+                        'File at index {index} has upload error.',
+                        'index' => $index,
+                    ]);
                 }
                 if (!file_exists($tmpName)) {
-                    throw new ValidationException(
-                        sprintf('File at index %d does not exist.', $index)
-                    );
+                    throw new ValidationException([
+                        'File at index {index} does not exist.',
+                        'index' => $index,
+                    ]);
                 }
             }
             return;

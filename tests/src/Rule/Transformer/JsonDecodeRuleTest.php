@@ -69,7 +69,6 @@ final class JsonDecodeRuleTest extends TestCase
             'non_string' => [
                 123,
                 [],
-                123,
             ],
         ];
     }

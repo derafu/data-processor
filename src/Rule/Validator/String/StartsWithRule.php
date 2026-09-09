@@ -28,9 +28,10 @@ final class StartsWithRule implements ValidatorRuleInterface
         }
 
         if (!str_starts_with($value, $parameters[0])) {
-            throw new ValidationException(
-                sprintf('Value must start with "%s"', $parameters[0])
-            );
+            throw new ValidationException([
+                'Value must start with "{prefix}"',
+                'prefix' => $parameters[0],
+            ]);
         }
     }
 }

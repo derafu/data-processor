@@ -12,6 +12,10 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Exception;
 
-class SanitizationException extends ProcessorException
+use Derafu\Translation\Contract\TranslatableInterface;
+use Derafu\Translation\Trait\TranslatableExceptionTrait;
+
+class SanitizationException extends ProcessorException implements TranslatableInterface
 {
+    use TranslatableExceptionTrait;
 }

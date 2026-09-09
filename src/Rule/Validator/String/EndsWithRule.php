@@ -28,9 +28,10 @@ final class EndsWithRule implements ValidatorRuleInterface
         }
 
         if (!str_ends_with($value, $parameters[0])) {
-            throw new ValidationException(
-                sprintf('Value must end with "%s"', $parameters[0])
-            );
+            throw new ValidationException([
+                'Value must end with "{suffix}"',
+                'suffix' => $parameters[0],
+            ]);
         }
     }
 }

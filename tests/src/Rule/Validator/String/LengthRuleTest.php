@@ -38,7 +38,7 @@ final class LengthRuleTest extends TestCase
         $this->rule->validate($value, $parameters);
 
         if ($shouldPass) {
-            $this->assertTrue(true);
+            $this->addToAssertionCount(1);
         }
     }
 

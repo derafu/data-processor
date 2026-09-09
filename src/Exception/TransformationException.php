@@ -12,6 +12,10 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Exception;
 
-class TransformationException extends ProcessorException
+use Derafu\Translation\Contract\TranslatableInterface;
+use Derafu\Translation\Trait\TranslatableExceptionTrait;
+
+class TransformationException extends ProcessorException implements TranslatableInterface
 {
+    use TranslatableExceptionTrait;
 }

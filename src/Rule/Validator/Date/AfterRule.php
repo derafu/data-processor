@@ -32,9 +32,10 @@ final class AfterRule implements ValidatorRuleInterface
                 : Carbon::parse($parameters[0]);
 
             if (!$date->isAfter($comparison)) {
-                throw new ValidationException(
-                    sprintf('Must be after %s.', $comparison->toDateTimeString())
-                );
+                throw new ValidationException([
+                    'Must be after {date}.',
+                    'date' => $comparison->toDateTimeString(),
+                ]);
             }
         } catch (InvalidFormatException $e) {
             throw new ValidationException('Invalid date format.');

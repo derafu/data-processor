@@ -30,9 +30,10 @@ final class MaxLengthRule implements ValidatorRuleInterface
         $maxLength = (int)$parameters[0];
 
         if (mb_strlen($value) > $maxLength) {
-            throw new ValidationException(
-                sprintf('Must not exceed %d characters.', $maxLength)
-            );
+            throw new ValidationException([
+                'Must not exceed {max} characters.',
+                'max' => $maxLength,
+            ]);
         }
     }
 }

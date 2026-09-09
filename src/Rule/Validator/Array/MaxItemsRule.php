@@ -29,9 +29,10 @@ final class MaxItemsRule implements ValidatorRuleInterface
 
         $max = (int)$parameters[0];
         if (count($value) > $max) {
-            throw new ValidationException(
-                sprintf('Array must not contain more than %d items.', $max)
-            );
+            throw new ValidationException([
+                'Array must not contain more than {max} items.',
+                'max' => $max,
+            ]);
         }
     }
 }

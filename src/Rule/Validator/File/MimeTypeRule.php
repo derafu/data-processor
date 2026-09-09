@@ -30,11 +30,11 @@ final class MimeTypeRule extends AbstractFileRule
 
         $allowedTypes = explode(',', $parameters[0]);
         if (!in_array($value['type'], $allowedTypes)) {
-            throw new ValidationException(sprintf(
-                'Invalid file type %s. Allowed types: %s.',
-                $value['type'],
-                implode(', ', $allowedTypes)
-            ));
+            throw new ValidationException([
+                'Invalid file type {type}. Allowed types: {allowed}.',
+                'type' => $value['type'],
+                'allowed' => implode(', ', $allowedTypes),
+            ]);
         }
     }
 }

@@ -52,9 +52,9 @@ final class StringRule implements CasterRuleInterface
             throw new CastingException('Cannot cast resource to string.');
         }
 
-        throw new CastingException(sprintf(
-            'Cannot cast value of type %s to string.',
-            get_debug_type($value)
-        ));
+        throw new CastingException([
+            'Cannot cast value of type {type} to string.',
+            'type' => get_debug_type($value),
+        ]);
     }
 }

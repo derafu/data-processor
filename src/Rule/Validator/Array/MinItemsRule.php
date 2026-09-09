@@ -29,9 +29,10 @@ final class MinItemsRule implements ValidatorRuleInterface
 
         $min = (int)$parameters[0];
         if (count($value) < $min) {
-            throw new ValidationException(
-                sprintf('Array must contain at least %d items.', $min)
-            );
+            throw new ValidationException([
+                'Array must contain at least {min} items.',
+                'min' => $min,
+            ]);
         }
     }
 }

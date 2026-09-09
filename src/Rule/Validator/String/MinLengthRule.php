@@ -30,9 +30,10 @@ final class MinLengthRule implements ValidatorRuleInterface
         $minLength = (int)$parameters[0];
 
         if (mb_strlen($value) < $minLength) {
-            throw new ValidationException(
-                sprintf('Must be at least %d characters long.', $minLength)
-            );
+            throw new ValidationException([
+                'Must be at least {min} characters long.',
+                'min' => $minLength,
+            ]);
         }
     }
 }

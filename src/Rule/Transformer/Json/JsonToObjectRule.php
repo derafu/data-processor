@@ -28,7 +28,10 @@ final class JsonToObjectRule implements TransformerRuleInterface
                 }
                 return $decoded;
             } catch (JsonException $e) {
-                throw new TransformationException('Invalid JSON string: ' . $e->getMessage());
+                throw new TransformationException([
+                    'Invalid JSON string: {reason}',
+                    'reason' => $e->getMessage(),
+                ]);
             }
         }
 
@@ -36,9 +39,9 @@ final class JsonToObjectRule implements TransformerRuleInterface
             return $value;
         }
 
-        throw new TransformationException(sprintf(
-            'Cannot transform value of type "%s" to object.',
-            get_debug_type($value)
-        ));
+        throw new TransformationException([
+            'Cannot transform value of type "{type}" to object.',
+            'type' => get_debug_type($value),
+        ]);
     }
 }

@@ -32,9 +32,11 @@ final class RangeRule implements ValidatorRuleInterface
         $number = (float)$value;
 
         if ($number < $min || $number > $max) {
-            throw new ValidationException(
-                sprintf('Must be between %s and %s.', $parameters[0], $parameters[1])
-            );
+            throw new ValidationException([
+                'Must be between {min} and {max}.',
+                'min' => $parameters[0],
+                'max' => $parameters[1],
+            ]);
         }
     }
 }

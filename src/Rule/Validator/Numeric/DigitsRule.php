@@ -31,9 +31,10 @@ final class DigitsRule implements ValidatorRuleInterface
         $digits = (int)$parameters[0];
 
         if ($length !== $digits) {
-            throw new ValidationException(
-                sprintf('Must have exactly %d digits.', $digits)
-            );
+            throw new ValidationException([
+                'Must have exactly {digits} digits.',
+                'digits' => $digits,
+            ]);
         }
     }
 }

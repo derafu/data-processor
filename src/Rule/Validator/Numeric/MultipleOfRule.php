@@ -34,9 +34,10 @@ final class MultipleOfRule implements ValidatorRuleInterface
 
         // Uso de fmod para soportar decimales.
         if (fmod((float)$value, $multiple) !== 0.0) {
-            throw new ValidationException(
-                sprintf('Must be a multiple of %s.', $parameters[0])
-            );
+            throw new ValidationException([
+                'Must be a multiple of {value}.',
+                'value' => $parameters[0],
+            ]);
         }
     }
 }

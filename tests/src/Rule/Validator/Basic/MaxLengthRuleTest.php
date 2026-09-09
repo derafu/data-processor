@@ -32,7 +32,7 @@ final class MaxLengthRuleTest extends TestCase
     public function testValidMaxLength(mixed $value, array $parameters): void
     {
         $this->rule->validate($value, $parameters);
-        $this->assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     #[DataProvider('invalidMaxLengthDataProvider')]

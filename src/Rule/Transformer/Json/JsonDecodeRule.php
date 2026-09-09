@@ -28,9 +28,10 @@ final class JsonDecodeRule implements TransformerRuleInterface
         try {
             return json_decode($value, $assoc, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            throw new TransformationException(
-                'Error decoding the value from JSON: ' . $e->getMessage()
-            );
+            throw new TransformationException([
+                'Error decoding the value from JSON: {reason}',
+                'reason' => $e->getMessage(),
+            ]);
         }
     }
 }

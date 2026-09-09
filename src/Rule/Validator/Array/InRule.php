@@ -24,12 +24,10 @@ final class InRule implements ValidatorRuleInterface
         }
 
         if (!in_array($value, $parameters, true)) {
-            throw new ValidationException(
-                sprintf(
-                    'Must be one of: %s.',
-                    implode(', ', array_map('strval', $parameters))
-                )
-            );
+            throw new ValidationException([
+                'Must be one of: {choices}.',
+                'choices' => implode(', ', array_map('strval', $parameters)),
+            ]);
         }
     }
 }

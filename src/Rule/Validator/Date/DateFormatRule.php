@@ -34,9 +34,10 @@ final class DateFormatRule implements ValidatorRuleInterface
         try {
             $date = Carbon::createFromFormat($format, $value);
             if (!$date instanceof Carbon || $date->format($format) !== $value) {
-                throw new ValidationException(
-                    sprintf('Must match format %s.', $format)
-                );
+                throw new ValidationException([
+                    'Must match format {format}.',
+                    'format' => $format,
+                ]);
             }
             return ;
         } catch (InvalidFormatException $e) {

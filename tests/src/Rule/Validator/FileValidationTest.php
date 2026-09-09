@@ -81,7 +81,7 @@ final class FileValidationTest extends TestCase
         $rule->validate($file, array_slice($rules, 1));
 
         if ($shouldPass) {
-            $this->assertTrue(true);
+            $this->addToAssertionCount(1);
         }
     }
 
@@ -188,7 +188,7 @@ final class FileValidationTest extends TestCase
         $rule = $this->makeConcreteRule();
         $path = $this->createTempFile('valid.txt');
         $rule->validate(['tmp_name' => $path, 'error' => UPLOAD_ERR_OK]);
-        $this->assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     public function testFilesNativeMultipleValid(): void
@@ -200,7 +200,7 @@ final class FileValidationTest extends TestCase
             'tmp_name' => [$path1, $path2],
             'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK],
         ]);
-        $this->assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     public function testFilesNativeMultipleUploadError(): void
@@ -234,7 +234,7 @@ final class FileValidationTest extends TestCase
             ['tmp_name' => $path1, 'error' => UPLOAD_ERR_OK],
             ['tmp_name' => $path2, 'error' => UPLOAD_ERR_OK],
         ]);
-        $this->assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     public function testNormalizedMultipleUploadError(): void
@@ -278,17 +278,17 @@ final class FileValidationTest extends TestCase
 
     public function testPsr7SingleFileValid(): void
     {
-        $mock = $this->createMock(UploadedFileInterface::class);
+        $mock = $this->createStub(UploadedFileInterface::class);
         $mock->method('getError')->willReturn(UPLOAD_ERR_OK);
 
         $rule = $this->makeConcreteRule();
         $rule->validate($mock);
-        $this->assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     public function testPsr7SingleFileWithError(): void
     {
-        $mock = $this->createMock(UploadedFileInterface::class);
+        $mock = $this->createStub(UploadedFileInterface::class);
         $mock->method('getError')->willReturn(UPLOAD_ERR_INI_SIZE);
 
         $rule = $this->makeConcreteRule();
@@ -298,21 +298,21 @@ final class FileValidationTest extends TestCase
 
     public function testPsr7MultipleFilesValid(): void
     {
-        $mock1 = $this->createMock(UploadedFileInterface::class);
+        $mock1 = $this->createStub(UploadedFileInterface::class);
         $mock1->method('getError')->willReturn(UPLOAD_ERR_OK);
-        $mock2 = $this->createMock(UploadedFileInterface::class);
+        $mock2 = $this->createStub(UploadedFileInterface::class);
         $mock2->method('getError')->willReturn(UPLOAD_ERR_OK);
 
         $rule = $this->makeConcreteRule();
         $rule->validate([$mock1, $mock2]);
-        $this->assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     public function testPsr7MultipleFilesWithError(): void
     {
-        $mock1 = $this->createMock(UploadedFileInterface::class);
+        $mock1 = $this->createStub(UploadedFileInterface::class);
         $mock1->method('getError')->willReturn(UPLOAD_ERR_OK);
-        $mock2 = $this->createMock(UploadedFileInterface::class);
+        $mock2 = $this->createStub(UploadedFileInterface::class);
         $mock2->method('getError')->willReturn(UPLOAD_ERR_INI_SIZE);
 
         $rule = $this->makeConcreteRule();

@@ -35,21 +35,20 @@ final class DecimalRule implements ValidatorRuleInterface
             $maxDecimals = (int)$parameters[1];
 
             if (strlen($decimals) < $minDecimals || strlen($decimals) > $maxDecimals) {
-                throw new ValidationException(
-                    sprintf(
-                        'Decimal places must be between %d and %d.',
-                        $minDecimals,
-                        $maxDecimals
-                    )
-                );
+                throw new ValidationException([
+                    'Decimal places must be between {min} and {max}.',
+                    'min' => $minDecimals,
+                    'max' => $maxDecimals,
+                ]);
             }
         } else {
             // Un solo parámetro indica exactitud decimal.
             $exactDecimals = (int)$parameters[0];
             if (strlen($decimals) !== $exactDecimals) {
-                throw new ValidationException(
-                    sprintf('Must have exactly %d decimal places.', $exactDecimals)
-                );
+                throw new ValidationException([
+                    'Must have exactly {decimals} decimal places.',
+                    'decimals' => $exactDecimals,
+                ]);
             }
         }
     }

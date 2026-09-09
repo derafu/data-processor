@@ -33,9 +33,10 @@ final class JsonEncodeRule implements TransformerRuleInterface
         try {
             return json_encode($value, $options);
         } catch (JsonException $e) {
-            throw new TransformationException(
-                'Error encoding the value to JSON: ' . $e->getMessage()
-            );
+            throw new TransformationException([
+                'Error encoding the value to JSON: {reason}',
+                'reason' => $e->getMessage(),
+            ]);
         }
     }
 }

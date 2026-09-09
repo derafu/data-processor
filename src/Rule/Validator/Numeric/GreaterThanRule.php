@@ -28,9 +28,10 @@ final class GreaterThanRule implements ValidatorRuleInterface
         }
 
         if ((float)$value <= (float)$parameters[0]) {
-            throw new ValidationException(
-                sprintf('Must be greater than %s.', $parameters[0])
-            );
+            throw new ValidationException([
+                'Must be greater than {value}.',
+                'value' => $parameters[0],
+            ]);
         }
     }
 }

@@ -38,7 +38,7 @@ final class NoWhitespaceRuleTest extends TestCase
         $this->rule->validate($value);
 
         if ($shouldPass) {
-            $this->assertTrue(true); // Reached here without exception
+            $this->addToAssertionCount(1); // Reached here without exception
         }
     }
 

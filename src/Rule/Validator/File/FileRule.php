@@ -23,9 +23,10 @@ final class FileRule extends AbstractFileRule
         if (isset($parameters[0])) {
             $maxSize = $this->parseSize($parameters[0]);
             if ($value['size'] > $maxSize) {
-                throw new ValidationException(
-                    sprintf('File must not be larger than %s.', $parameters[0])
-                );
+                throw new ValidationException([
+                    'File must not be larger than {max}.',
+                    'max' => $parameters[0],
+                ]);
             }
         }
     }

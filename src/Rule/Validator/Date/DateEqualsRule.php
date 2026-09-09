@@ -32,9 +32,10 @@ final class DateEqualsRule implements ValidatorRuleInterface
                 : Carbon::parse($parameters[0]);
 
             if (!$date->equalTo($comparison)) {
-                throw new ValidationException(
-                    sprintf('Must be equal to %s.', $comparison->toDateTimeString())
-                );
+                throw new ValidationException([
+                    'Must be equal to {date}.',
+                    'date' => $comparison->toDateTimeString(),
+                ]);
             }
         } catch (InvalidFormatException $e) {
             throw new ValidationException('Invalid date format.');

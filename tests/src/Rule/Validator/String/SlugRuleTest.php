@@ -38,7 +38,7 @@ final class SlugRuleTest extends TestCase
         $this->rule->validate($value);
 
         if ($shouldPass) {
-            $this->assertTrue(true);
+            $this->addToAssertionCount(1);
         }
     }
 

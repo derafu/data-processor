@@ -32,7 +32,7 @@ final class JsonToObjectRuleTest extends TestCase
     public function testObjectCast(mixed $input, array $expectedProperties): void
     {
         $result = $this->rule->transform($input);
-        $this->assertIsObject($result);
+        $this->assertCount(count($expectedProperties), get_object_vars($result));
         foreach ($expectedProperties as $property => $value) {
             $this->assertObjectHasProperty($property, $result);
             $this->assertSame(

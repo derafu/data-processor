@@ -34,9 +34,15 @@ final class DateRule implements CasterRuleInterface
             }
             return Carbon::parse($value)->startOfDay();
         } catch (InvalidFormatException $e) {
-            throw new CastingException('Invalid date format: ' . $e->getMessage());
+            throw new CastingException([
+                'Invalid date format: {reason}',
+                'reason' => $e->getMessage(),
+            ]);
         } catch (TypeError $e) {
-            throw new CastingException('Invalid date format: ' . $e->getMessage());
+            throw new CastingException([
+                'Invalid date format: {reason}',
+                'reason' => $e->getMessage(),
+            ]);
         }
     }
 }

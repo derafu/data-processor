@@ -12,6 +12,10 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Exception;
 
-class CastingException extends ProcessorException
+use Derafu\Translation\Contract\TranslatableInterface;
+use Derafu\Translation\Trait\TranslatableExceptionTrait;
+
+class CastingException extends ProcessorException implements TranslatableInterface
 {
+    use TranslatableExceptionTrait;
 }

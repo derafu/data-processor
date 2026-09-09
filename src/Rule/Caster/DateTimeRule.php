@@ -34,9 +34,15 @@ final class DateTimeRule implements CasterRuleInterface
             }
             return Carbon::parse($value);
         } catch (InvalidFormatException $e) {
-            throw new CastingException('Invalid datetime format: ' . $e->getMessage());
+            throw new CastingException([
+                'Invalid datetime format: {reason}',
+                'reason' => $e->getMessage(),
+            ]);
         } catch (TypeError $e) {
-            throw new CastingException('Invalid date format: ' . $e->getMessage());
+            throw new CastingException([
+                'Invalid date format: {reason}',
+                'reason' => $e->getMessage(),
+            ]);
         }
     }
 }
