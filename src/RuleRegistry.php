@@ -95,11 +95,11 @@ final class RuleRegistry implements RuleRegistryInterface
     public function getTransformerRule(string $name): TransformerRuleInterface
     {
         if (!isset($this->transformerRules[$name])) {
-            throw new RuleNotFoundException(sprintf(
-                'Transformer rule "%s" not found. Available rules: %s.',
-                $name,
-                implode(', ', array_keys($this->transformerRules))
-            ));
+            throw new RuleNotFoundException([
+                'Transformer rule "{name}" not found. Available rules: {rules}.',
+                'name' => $name,
+                'rules' => implode(', ', array_keys($this->transformerRules)),
+            ]);
         }
 
         if (!isset($this->lazyRules[$this->transformerRules[$name]])) {
@@ -117,11 +117,11 @@ final class RuleRegistry implements RuleRegistryInterface
     public function getSanitizerRule(string $name): SanitizerRuleInterface
     {
         if (!isset($this->sanitizerRules[$name])) {
-            throw new RuleNotFoundException(sprintf(
-                'Sanitizer rule "%s" not found. Available rules: %s.',
-                $name,
-                implode(', ', array_keys($this->sanitizerRules))
-            ));
+            throw new RuleNotFoundException([
+                'Sanitizer rule "{name}" not found. Available rules: {rules}.',
+                'name' => $name,
+                'rules' => implode(', ', array_keys($this->sanitizerRules)),
+            ]);
         }
 
         if (!isset($this->lazyRules[$this->sanitizerRules[$name]])) {
@@ -139,11 +139,11 @@ final class RuleRegistry implements RuleRegistryInterface
     public function getCasterRule(string $name): CasterRuleInterface
     {
         if (!isset($this->casterRules[$name])) {
-            throw new RuleNotFoundException(sprintf(
-                'Caster rule "%s" not found. Available rules: %s.',
-                $name,
-                implode(', ', array_keys($this->casterRules))
-            ));
+            throw new RuleNotFoundException([
+                'Caster rule "{name}" not found. Available rules: {rules}.',
+                'name' => $name,
+                'rules' => implode(', ', array_keys($this->casterRules)),
+            ]);
         }
 
         if (!isset($this->lazyRules[$this->casterRules[$name]])) {
@@ -161,11 +161,11 @@ final class RuleRegistry implements RuleRegistryInterface
     public function getValidatorRule(string $name): ValidatorRuleInterface
     {
         if (!isset($this->validatorRules[$name])) {
-            throw new RuleNotFoundException(sprintf(
-                'Validator rule "%s" not found. Available rules: %s.',
-                $name,
-                implode(', ', array_keys($this->validatorRules))
-            ));
+            throw new RuleNotFoundException([
+                'Validator rule "{name}" not found. Available rules: {rules}.',
+                'name' => $name,
+                'rules' => implode(', ', array_keys($this->validatorRules)),
+            ]);
         }
 
         if (!isset($this->lazyRules[$this->validatorRules[$name]])) {

@@ -14,7 +14,7 @@ namespace Derafu\DataProcessor;
 
 use Derafu\DataProcessor\Contract\RuleRegistryInterface;
 use Derafu\DataProcessor\Contract\RuleResolverInterface;
-use InvalidArgumentException;
+use Derafu\Translation\Exception\Logic\TranslatableInvalidArgumentException as InvalidArgumentException;
 
 /**
  * Resolves rule strings into rule instances with parameters.
@@ -42,7 +42,7 @@ final class RuleResolver implements RuleResolverInterface
             'cast' => $this->registry->getCasterRule($ruleName),
             'sanitize' => $this->registry->getSanitizerRule($ruleName),
             'validate' => $this->registry->getValidatorRule($ruleName),
-            default => throw new InvalidArgumentException("Invalid rule type: {$type}")
+            default => throw new InvalidArgumentException(['Invalid rule type: {type}', 'type' => $type])
         };
 
         return [$rule, $parameters];

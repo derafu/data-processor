@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Exception;
 
-use RuntimeException;
+use Derafu\Translation\Exception\Core\TranslatableRuntimeException;
 
-class ProcessorException extends RuntimeException
+class ProcessorException extends TranslatableRuntimeException
 {
 }

@@ -32,11 +32,11 @@ final class IpRule implements ValidatorRuleInterface
         };
 
         if (!filter_var($value, FILTER_VALIDATE_IP, $flags)) {
-            throw new ValidationException(
-                $version
-                    ? ['Invalid IPv{version} format.', 'version' => $version]
-                    : 'Invalid IP format.'
-            );
+            if ($version) {
+                throw new ValidationException(['Invalid IPv{version} format.', 'version' => $version]);
+            }
+
+            throw new ValidationException('Invalid IP format.');
         }
     }
 }

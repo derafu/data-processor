@@ -14,31 +14,34 @@ namespace Derafu\DataProcessor\Rule\Caster;
 
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
+use DateTimeInterface;
 use Derafu\DataProcessor\Contract\CasterRuleInterface;
 use Derafu\DataProcessor\Exception\CastingException;
-use TypeError;
 
 final class DateRule implements CasterRuleInterface
 {
     public function cast(mixed $value, array $parameters = []): Carbon
     {
+        if ($value === null) {
+            throw new CastingException('Invalid date format: null is not valid.');
+        }
+        if (is_numeric($value)) {
+            throw new CastingException('Invalid date format: numeric is not valid.');
+        }
+        if ($value instanceof Carbon) {
+            return $value->startOfDay();
+        }
+
+        if (!is_string($value) && !$value instanceof DateTimeInterface) {
+            throw new CastingException([
+                'Invalid date format: {type} is not valid.',
+                'type' => get_debug_type($value),
+            ]);
+        }
+
         try {
-            if ($value === null) {
-                throw new InvalidFormatException('null is not valid.');
-            }
-            if (is_numeric($value)) {
-                throw new InvalidFormatException('numeric is not valid.');
-            }
-            if ($value instanceof Carbon) {
-                return $value->startOfDay();
-            }
             return Carbon::parse($value)->startOfDay();
         } catch (InvalidFormatException $e) {
-            throw new CastingException([
-                'Invalid date format: {reason}',
-                'reason' => $e->getMessage(),
-            ]);
-        } catch (TypeError $e) {
             throw new CastingException([
                 'Invalid date format: {reason}',
                 'reason' => $e->getMessage(),

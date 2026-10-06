@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Derafu\TestsDataProcessor\Rule\Caster;
 
 use Carbon\Carbon;
+use DateTimeImmutable;
 use Derafu\DataProcessor\Exception\CastingException;
 use Derafu\DataProcessor\Rule\Caster\TimestampRule;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -49,6 +50,27 @@ final class TimestampRuleTest extends TestCase
         $this->rule->cast($input);
     }
 
+    public function testTheMessageSaysWhyTheValueIsNotValid(): void
+    {
+        $this->assertSame('Invalid timestamp format: null is not valid.', $this->messageOf(null));
+        $this->assertStringStartsWith('Invalid timestamp format: ', $this->messageOf('not a date'));
+        // What is neither text nor a date says its type, not the error of PHP.
+        $this->assertSame('Invalid timestamp format: array is not valid.', $this->messageOf([2024, 1, 15]));
+        $this->assertSame('Invalid timestamp format: bool is not valid.', $this->messageOf(true));
+        $this->assertSame('Invalid timestamp format: stdClass is not valid.', $this->messageOf(new \stdClass()));
+    }
+
+    private function messageOf(mixed $input): string
+    {
+        try {
+            $this->rule->cast($input);
+        } catch (CastingException $e) {
+            return $e->getMessage();
+        }
+
+        $this->fail('It should not be possible to cast this value.');
+    }
+
     public static function timestampCastDataProvider(): array
     {
         $timestamp = Carbon::create(2024, 1, 15, 15, 30, 0)->timestamp;
@@ -59,6 +81,7 @@ final class TimestampRuleTest extends TestCase
             'datetime_string' => ['2024-01-15 15:30:00', $timestamp],
             'date_string' => ['2024-01-15', Carbon::create(2024, 1, 15, 0, 0, 0)->timestamp],
             'carbon_instance' => [Carbon::create(2024, 1, 15, 15, 30, 0), $timestamp],
+            'datetime_immutable' => [new DateTimeImmutable('2024-01-15 15:30:00'), $timestamp],
             'relative_time' => ['tomorrow', Carbon::create(2024, 1, 2, 0, 0, 0)->timestamp],
         ];
     }
