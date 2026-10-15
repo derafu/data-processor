@@ -28,6 +28,9 @@ final class LengthRuleTest extends TestCase
         $this->rule = new LengthRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('lengthDataProvider')]
     public function testLength(mixed $value, array $parameters, bool $shouldPass): void
     {
@@ -42,6 +45,9 @@ final class LengthRuleTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function lengthDataProvider(): array
     {
         return [

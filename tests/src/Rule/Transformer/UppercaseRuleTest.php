@@ -41,6 +41,9 @@ final class UppercaseRuleTest extends TestCase
         $this->rule->transform(123);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function uppercaseDataProvider(): array
     {
         return [

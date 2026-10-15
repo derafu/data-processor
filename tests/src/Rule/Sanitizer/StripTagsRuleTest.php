@@ -28,6 +28,9 @@ final class StripTagsRuleTest extends TestCase
         $this->rule = new StripTagsRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('stripTagsDataProvider')]
     public function testStripTags(string $input, array $parameters, string $expected): void
     {
@@ -42,6 +45,9 @@ final class StripTagsRuleTest extends TestCase
         $result = $this->rule->sanitize($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function stripTagsDataProvider(): array
     {
         return [

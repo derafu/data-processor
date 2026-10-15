@@ -28,6 +28,9 @@ final class TransliterateRuleTest extends TestCase
         $this->rule = new TransliterateRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('transliterateDataProvider')]
     public function testTransliterate(mixed $input, array $parameters, mixed $expected): void
     {
@@ -35,6 +38,9 @@ final class TransliterateRuleTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function transliterateDataProvider(): array
     {
         return [
@@ -61,6 +67,9 @@ final class TransliterateRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('invalidDransliterateDataProvider')]
     public function testInvalidTransliterate(mixed $input, array $parameters): void
     {
@@ -68,6 +77,9 @@ final class TransliterateRuleTest extends TestCase
         $result = $this->rule->transform($input, $parameters);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidDransliterateDataProvider(): array
     {
         return [

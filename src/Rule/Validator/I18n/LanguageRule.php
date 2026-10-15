@@ -13,12 +13,16 @@ declare(strict_types=1);
 namespace Derafu\DataProcessor\Rule\Validator\I18n;
 
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
+use Derafu\DataProcessor\Exception\ProcessorException;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Locale;
 use ResourceBundle;
 
 final class LanguageRule implements ValidatorRuleInterface
 {
+    /**
+     * @var array<int, string>
+     */
     private array $languages;
 
     public function __construct()
@@ -40,12 +44,16 @@ final class LanguageRule implements ValidatorRuleInterface
         }
     }
 
+    /**
+     * @return array<int, string>
+     */
     private function getLanguages(): array
     {
         $locales = ResourceBundle::getLocales('');
+        $locales = $locales === false ? throw new ProcessorException('The list of locales can not be read.') : $locales;
         $languages = [];
         foreach ($locales as $locale) {
-            $code = Locale::getPrimaryLanguage($locale);
+            $code = Locale::getPrimaryLanguage($locale) ?? '';
             if (strlen($code) === 2) {
                 $languages[] = strtolower($code);
             }

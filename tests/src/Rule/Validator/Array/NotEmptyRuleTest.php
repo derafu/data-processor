@@ -42,6 +42,9 @@ final class NotEmptyRuleTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function notEmptyDataProvider(): array
     {
         return [

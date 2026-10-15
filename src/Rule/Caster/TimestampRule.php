@@ -37,7 +37,7 @@ final class TimestampRule implements CasterRuleInterface
         }
 
         try {
-            return Carbon::parse($value)->timestamp;
+            return Carbon::parse($value)->getTimestamp();
         } catch (InvalidFormatException $e) {
             throw new CastingException([
                 'Invalid timestamp format: {reason}',

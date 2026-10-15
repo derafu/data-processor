@@ -42,6 +42,9 @@ final class RemoveNonPrintableRuleTest extends TestCase
         $result = $this->rule->sanitize($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function removeNonPrintableDataProvider(): array
     {
         return [

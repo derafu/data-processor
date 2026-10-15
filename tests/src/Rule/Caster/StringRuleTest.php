@@ -42,6 +42,9 @@ final class StringRuleTest extends TestCase
         $this->rule->cast($input);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function validStringCastDataProvider(): array
     {
         return [
@@ -66,6 +69,9 @@ final class StringRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidStringCastDataProvider(): array
     {
         return [

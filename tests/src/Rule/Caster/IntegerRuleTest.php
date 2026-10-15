@@ -42,6 +42,9 @@ final class IntegerRuleTest extends TestCase
         $this->rule->cast($input);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function integerCastDataProvider(): array
     {
         return [
@@ -56,12 +59,16 @@ final class IntegerRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidIntegerCastDataProvider(): array
     {
         return [
             'non_numeric_string' => ['hello'],
             'mixed_string' => ['123abc'],
             'array' => [[1,2,3]],
+            'object' => [new \stdClass()],
         ];
     }
 }

@@ -42,6 +42,9 @@ final class RequiredRuleTest extends TestCase
         $this->rule->validate($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function validRequiredDataProvider(): array
     {
         return [
@@ -55,6 +58,9 @@ final class RequiredRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidRequiredDataProvider(): array
     {
         return [

@@ -27,8 +27,10 @@ use Derafu\DataProcessor\Rule\Validator\String\StartsWithRule;
 use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
+use Derafu\DataProcessor\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Processor::class)]
@@ -44,6 +46,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(EndsWithRule::class)]
 #[CoversClass(RegexRule::class)]
 #[CoversClass(NotRegexRule::class)]
+#[UsesClass(RuleSet::class)]
 final class StringValidationTest extends TestCase
 {
     private ProcessorInterface $processor;
@@ -53,6 +56,9 @@ final class StringValidationTest extends TestCase
         $this->processor = ProcessorFactory::create();
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('stringPatternValidationProvider')]
     public function testStringPatternValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -69,6 +75,9 @@ final class StringValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function stringPatternValidationProvider(): array
     {
         return [

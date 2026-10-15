@@ -33,8 +33,10 @@ use Derafu\DataProcessor\Rule\Validator\Internet\UrlRule;
 use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
+use Derafu\DataProcessor\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Processor::class)]
@@ -56,6 +58,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(BicRule::class)]
 #[CoversClass(CardNumberRule::class)]
 #[CoversClass(HostnameRule::class)]
+#[UsesClass(RuleSet::class)]
 final class FormatValidationTest extends TestCase
 {
     private ProcessorInterface $processor;
@@ -81,6 +84,9 @@ final class FormatValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function emailValidationProvider(): array
     {
         return [
@@ -123,6 +129,9 @@ final class FormatValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function urlValidationProvider(): array
     {
         return [
@@ -153,6 +162,9 @@ final class FormatValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('ipValidationProvider')]
     public function testIpValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -169,6 +181,9 @@ final class FormatValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function ipValidationProvider(): array
     {
         return [
@@ -216,6 +231,9 @@ final class FormatValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function uuidValidationProvider(): array
     {
         return [
@@ -238,6 +256,9 @@ final class FormatValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('localeValidationProvider')]
     public function testLocaleValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -254,6 +275,9 @@ final class FormatValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function localeValidationProvider(): array
     {
         return [
@@ -295,6 +319,9 @@ final class FormatValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('currencyValidationProvider')]
     public function testCurrencyValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -311,6 +338,9 @@ final class FormatValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function currencyValidationProvider(): array
     {
         return [
@@ -337,6 +367,9 @@ final class FormatValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('timeZoneValidationProvider')]
     public function testTimeZoneValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -353,6 +386,9 @@ final class FormatValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function timeZoneValidationProvider(): array
     {
         return [
@@ -374,6 +410,9 @@ final class FormatValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('financialValidationProvider')]
     public function testFinancialValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -390,6 +429,9 @@ final class FormatValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function financialValidationProvider(): array
     {
         return [
@@ -431,6 +473,9 @@ final class FormatValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('hostValidationProvider')]
     public function testHostValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -447,6 +492,9 @@ final class FormatValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function hostValidationProvider(): array
     {
         return [

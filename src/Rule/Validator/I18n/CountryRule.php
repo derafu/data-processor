@@ -13,12 +13,16 @@ declare(strict_types=1);
 namespace Derafu\DataProcessor\Rule\Validator\I18n;
 
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
+use Derafu\DataProcessor\Exception\ProcessorException;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Locale;
 use ResourceBundle;
 
 final class CountryRule implements ValidatorRuleInterface
 {
+    /**
+     * @var array<int, string>
+     */
     private array $countries;
 
     public function __construct()
@@ -37,12 +41,16 @@ final class CountryRule implements ValidatorRuleInterface
         }
     }
 
+    /**
+     * @return array<int, string>
+     */
     private function getCountries(): array
     {
         $locales = ResourceBundle::getLocales('');
+        $locales = $locales === false ? throw new ProcessorException('The list of locales can not be read.') : $locales;
         $countries = [];
         foreach ($locales as $locale) {
-            $code = Locale::getRegion($locale);
+            $code = Locale::getRegion($locale) ?? '';
             if (strlen($code) === 2) {
                 $countries[] = strtoupper($code);
             }

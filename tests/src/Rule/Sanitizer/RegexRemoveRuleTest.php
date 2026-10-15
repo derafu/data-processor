@@ -28,6 +28,9 @@ final class RegexRemoveRuleTest extends TestCase
         $this->rule = new RegexRemoveRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('regexRemoveDataProvider')]
     public function testRegexRemove(string $input, array $parameters, string $expected): void
     {
@@ -42,6 +45,9 @@ final class RegexRemoveRuleTest extends TestCase
         $result = $this->rule->sanitize($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function regexRemoveDataProvider(): array
     {
         return [

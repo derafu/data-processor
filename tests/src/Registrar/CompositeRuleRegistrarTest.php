@@ -25,8 +25,10 @@ use Derafu\DataProcessor\Rule\Validator\String\MinLengthRule;
 use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
+use Derafu\DataProcessor\RuleSet;
 use Generator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -40,6 +42,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RuleParser::class)]
 #[CoversClass(RuleResolver::class)]
 #[CoversClass(MinLengthRule::class)]
+#[UsesClass(RuleSet::class)]
 final class CompositeRuleRegistrarTest extends TestCase
 {
     public function testWithoutRegistrarsItRegistersNothing(): void

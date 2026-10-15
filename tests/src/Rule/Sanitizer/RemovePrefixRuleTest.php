@@ -28,6 +28,9 @@ final class RemovePrefixRuleTest extends TestCase
         $this->rule = new RemovePrefixRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('removePrefixDataProvider')]
     public function testRemovePrefix(string $input, array $parameters, string $expected): void
     {
@@ -42,6 +45,9 @@ final class RemovePrefixRuleTest extends TestCase
         $result = $this->rule->sanitize($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function removePrefixDataProvider(): array
     {
         return [

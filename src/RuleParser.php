@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Derafu\DataProcessor;
 
 use Derafu\DataProcessor\Contract\RuleParserInterface;
+use Derafu\DataProcessor\Exception\ProcessorException;
 
 /**
  * Resolves rule strings into rule instances with parameters.
@@ -43,33 +44,20 @@ final class RuleParser implements RuleParserInterface
     /**
      * Parses rules from array format.
      *
-     * @param array $rules
-     * @return array
+     * @param array<array-key, mixed> $rules
+     * @return array{transform?: list<string>, sanitize?: list<string>, cast?: string, validate?: list<string>}
+     * @throws ProcessorException If the rules are not valid.
      */
     private function parseArray(array $rules): array
     {
-        $parsed = [];
-
-        foreach ($rules as $type => $typeRules) {
-            if (!is_string($typeRules)) {
-                $parsed[$type] = $typeRules;
-                continue;
-            }
-            if ($type === 'cast') {
-                $parsed[$type] = $typeRules;
-                continue;
-            }
-            $parsed[$type] = explode('|', $typeRules);
-        }
-
-        return $parsed;
+        return RuleSet::fromArray($rules)->toArray();
     }
 
     /**
      * Parses rules from string format.
      *
      * @param string $rules
-     * @return array
+     * @return array{transform?: list<string>, sanitize?: list<string>, cast?: string, validate?: list<string>}
      */
     private function parseString(string $rules): array
     {
@@ -80,7 +68,7 @@ final class RuleParser implements RuleParserInterface
             'validate' => [],
         ];
 
-        $parts = preg_split('/\s+/', trim($rules));
+        $parts = preg_split('/\s+/', trim($rules)) ?: throw new ProcessorException(['The rules can not be split: {error}', 'error' => preg_last_error_msg()]);
 
         foreach ($parts as $part) {
             if (preg_match('/^([tsv])\\(([^)]*)\\)$/', $part, $matches)) {

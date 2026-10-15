@@ -25,6 +25,12 @@ final class FloatRule implements CasterRuleInterface
         if (is_array($value)) {
             throw new CastingException('Cannot cast array to float.');
         }
+        if ($value !== null && !is_scalar($value)) {
+            throw new CastingException([
+                'Cannot cast {type} to float.',
+                'type' => get_debug_type($value),
+            ]);
+        }
         $result = (float)$value;
         if (isset($parameters[0])) {
             $decimals = (int)$parameters[0];

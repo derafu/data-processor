@@ -20,7 +20,8 @@ final class MimeTypeRule extends AbstractFileRule
     {
         $this->validateFileArray($value);
 
-        if (!isset($value['type'])) {
+        $types = $this->typesOf($value);
+        if (in_array(null, $types, true)) {
             throw new ValidationException('File array must contain type.');
         }
 
@@ -29,12 +30,14 @@ final class MimeTypeRule extends AbstractFileRule
         }
 
         $allowedTypes = explode(',', $parameters[0]);
-        if (!in_array($value['type'], $allowedTypes)) {
-            throw new ValidationException([
-                'Invalid file type {type}. Allowed types: {allowed}.',
-                'type' => $value['type'],
-                'allowed' => implode(', ', $allowedTypes),
-            ]);
+        foreach ($types as $type) {
+            if (!in_array($type, $allowedTypes)) {
+                throw new ValidationException([
+                    'Invalid file type {type}. Allowed types: {allowed}.',
+                    'type' => $type,
+                    'allowed' => implode(', ', $allowedTypes),
+                ]);
+            }
         }
     }
 }

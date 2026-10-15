@@ -28,6 +28,9 @@ final class RemoveCharsRuleTest extends TestCase
         $this->rule = new RemoveCharsRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('removeCharsDataProvider')]
     public function testRemoveChars(string $input, array $parameters, string $expected): void
     {
@@ -42,6 +45,9 @@ final class RemoveCharsRuleTest extends TestCase
         $result = $this->rule->sanitize($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function removeCharsDataProvider(): array
     {
         return [

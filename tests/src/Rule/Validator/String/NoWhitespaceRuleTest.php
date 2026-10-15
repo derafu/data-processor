@@ -42,6 +42,9 @@ final class NoWhitespaceRuleTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function noWhitespaceDataProvider(): array
     {
         return [

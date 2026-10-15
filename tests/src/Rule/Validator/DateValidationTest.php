@@ -30,8 +30,10 @@ use Derafu\DataProcessor\Rule\Validator\Date\WeekendRule;
 use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
+use Derafu\DataProcessor\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Processor::class)]
@@ -49,11 +51,12 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(BeforeRule::class)]
 #[CoversClass(WeekdayRule::class)]
 #[CoversClass(WeekendRule::class)]
+#[UsesClass(RuleSet::class)]
 final class DateValidationTest extends TestCase
 {
     private ProcessorInterface $processor;
 
-    private $now;
+    private ?Carbon $now = null;
 
     protected function setUp(): void
     {
@@ -68,6 +71,9 @@ final class DateValidationTest extends TestCase
         Carbon::setTestNow();
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('dateFormatValidationProvider')]
     public function testDateFormatValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -84,6 +90,9 @@ final class DateValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function dateFormatValidationProvider(): array
     {
         return [
@@ -130,6 +139,9 @@ final class DateValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('dateComparisonProvider')]
     public function testDateComparison(string $input, array $rules, bool $shouldPass): void
     {
@@ -146,6 +158,9 @@ final class DateValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function dateComparisonProvider(): array
     {
         return [
@@ -202,6 +217,9 @@ final class DateValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('relativeDateValidationProvider')]
     public function testRelativeDateValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -218,6 +236,9 @@ final class DateValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function relativeDateValidationProvider(): array
     {
         return [
@@ -264,6 +285,9 @@ final class DateValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('weekendWeekdayValidationProvider')]
     public function testWeekendWeekdayValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -280,6 +304,9 @@ final class DateValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function weekendWeekdayValidationProvider(): array
     {
         return [
@@ -306,6 +333,9 @@ final class DateValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('betweenValidationProvider')]
     public function testBetweenValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -322,6 +352,9 @@ final class DateValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function betweenValidationProvider(): array
     {
         return [

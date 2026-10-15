@@ -13,11 +13,14 @@ declare(strict_types=1);
 namespace Derafu\TestsDataProcessor;
 
 use Derafu\DataProcessor\RuleParser;
+use Derafu\DataProcessor\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(RuleParser::class)]
+#[UsesClass(RuleSet::class)]
 final class RuleParserTest extends TestCase
 {
     private RuleParser $parser;
@@ -27,6 +30,10 @@ final class RuleParserTest extends TestCase
         $this->parser = new RuleParser();
     }
 
+    /**
+     * @param array<array-key, mixed> $expected
+     * @param string|array<string, string|list<string>> $input
+     */
     #[DataProvider('ruleParsingProvider')]
     public function testRuleParsing(string|array $input, array $expected): void
     {
@@ -34,6 +41,9 @@ final class RuleParserTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function ruleParsingProvider(): array
     {
         return [

@@ -14,10 +14,9 @@ namespace Derafu\DataProcessor\Rule\Validator\Date;
 
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
-use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 
-final class AfterOrEqualRule implements ValidatorRuleInterface
+final class AfterOrEqualRule extends AbstractDateRule
 {
     public function validate(mixed $value, array $parameters = []): void
     {
@@ -26,7 +25,7 @@ final class AfterOrEqualRule implements ValidatorRuleInterface
         }
 
         try {
-            $date = Carbon::parse($value);
+            $date = $this->parseDate($value);
             $comparison = $parameters[0] === 'now'
                 ? Carbon::now()
                 : Carbon::parse($parameters[0]);

@@ -28,21 +28,25 @@ final class ImageRule extends AbstractFileRule
     {
         $this->validateFileArray($value);
 
-        if (!isset($value['type'])) {
-            throw new ValidationException('File array must contain type.');
-        }
+        foreach ($this->typesOf($value) as $type) {
+            if ($type === null) {
+                throw new ValidationException('File array must contain type.');
+            }
 
-        if (!in_array($value['type'], self::ALLOWED_TYPES)) {
-            throw new ValidationException('File must be an image.');
+            if (!in_array($type, self::ALLOWED_TYPES)) {
+                throw new ValidationException('File must be an image.');
+            }
         }
 
         if (isset($parameters[0])) {
             $maxSize = $this->parseSize($parameters[0]);
-            if ($value['size'] > $maxSize) {
-                throw new ValidationException([
-                    'Image must not be larger than {max}.',
-                    'max' => $parameters[0],
-                ]);
+            foreach ($this->sizesOf($value) as $size) {
+                if ($size > $maxSize) {
+                    throw new ValidationException([
+                        'Image must not be larger than {max}.',
+                        'max' => $parameters[0],
+                    ]);
+                }
             }
         }
     }

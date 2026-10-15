@@ -35,6 +35,9 @@ final class Base64EncodeRuleTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function validBase64EncodeDataProvider(): array
     {
         return [
@@ -52,6 +55,9 @@ final class Base64EncodeRuleTest extends TestCase
         $result = $this->rule->transform($input);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidBase64EncodeDataProvider(): array
     {
         return [

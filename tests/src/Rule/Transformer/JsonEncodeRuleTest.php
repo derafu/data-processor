@@ -27,6 +27,9 @@ final class JsonEncodeRuleTest extends TestCase
         $this->rule = new JsonEncodeRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('jsonEncodeDataProvider')]
     public function testJsonEncode(mixed $input, array $parameters, mixed $expected): void
     {
@@ -34,6 +37,9 @@ final class JsonEncodeRuleTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function jsonEncodeDataProvider(): array
     {
         return [

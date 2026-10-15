@@ -20,7 +20,7 @@ interface TransformerRuleInterface
      * Transforms a value according to the rule.
      *
      * @param mixed $value The value to transform.
-     * @param array $parameters Optional parameters for the transformation.
+     * @param list<string> $parameters Optional parameters for the transformation.
      * @return mixed The transformed value.
      * @throws TransformationException If the transformation fails.
      */

@@ -31,6 +31,9 @@ final class FileValidationTest extends TestCase
 {
     private string $tempDir;
 
+    /**
+     * @var list<string>
+     */
     private array $tempFiles = [];
 
     protected function setUp(): void
@@ -61,6 +64,10 @@ final class FileValidationTest extends TestCase
     // Tests for $_FILES simple format (single file).
     // -------------------------------------------------------------------------
 
+    /**
+     * @param array{tmp_name: string, type: string, size: int, error: int} $file
+     * @param list<string> $rules
+     */
     #[DataProvider('fileValidationProvider')]
     public function testFileValidation(array $file, array $rules, bool $shouldPass): void
     {
@@ -85,6 +92,9 @@ final class FileValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function fileValidationProvider(): array
     {
         return [
@@ -333,5 +343,123 @@ final class FileValidationTest extends TestCase
             ['tmp_name' => $path, 'error' => UPLOAD_ERR_OK, 'size' => 100],
             ['1X']
         );
+    }
+    // -------------------------------------------------------------------------
+    // Tests for the size and the type of PSR-7 files.
+    // -------------------------------------------------------------------------
+
+    private function psr7File(?int $size, ?string $type, int $error = UPLOAD_ERR_OK): UploadedFileInterface
+    {
+        $file = $this->createStub(UploadedFileInterface::class);
+        $file->method('getError')->willReturn($error);
+        $file->method('getSize')->willReturn($size);
+        $file->method('getClientMediaType')->willReturn($type);
+
+        return $file;
+    }
+
+    public function testPsr7FileWithinTheMaximumSize(): void
+    {
+        (new FileRule())->validate($this->psr7File(1024, 'text/plain'), ['1K']);
+        (new FileRule())->validate($this->psr7File(null, null), ['1K']);
+
+        $this->addToAssertionCount(2);
+    }
+
+    public function testPsr7FileLargerThanTheMaximumSize(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File must not be larger than 1K.');
+
+        (new FileRule())->validate($this->psr7File(1025, 'text/plain'), ['1K']);
+    }
+
+    public function testEveryPsr7FileOfAListIsComparedWithTheMaximumSize(): void
+    {
+        $rule = new FileRule();
+        $rule->validate([$this->psr7File(10, 'a/b'), $this->psr7File(20, 'a/b')], ['1K']);
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File must not be larger than 1K.');
+
+        $rule->validate([$this->psr7File(10, 'a/b'), $this->psr7File(2048, 'a/b')], ['1K']);
+    }
+
+    public function testPsr7ImageIsAccepted(): void
+    {
+        (new ImageRule())->validate($this->psr7File(1024, 'image/png'), ['1M']);
+        (new ImageRule())->validate([$this->psr7File(1, 'image/png'), $this->psr7File(1, 'image/jpeg')]);
+
+        $this->addToAssertionCount(2);
+    }
+
+    public function testPsr7FileThatIsNotAnImageIsRejected(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File must be an image.');
+
+        (new ImageRule())->validate($this->psr7File(1024, 'application/pdf'));
+    }
+
+    public function testPsr7ImageLargerThanTheMaximumSizeIsRejected(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Image must not be larger than 1K.');
+
+        (new ImageRule())->validate($this->psr7File(2048, 'image/png'), ['1K']);
+    }
+
+    public function testPsr7FileWithoutTypeIsRejectedByTheRulesOfType(): void
+    {
+        foreach ([new ImageRule(), new MimeTypeRule()] as $rule) {
+            try {
+                $rule->validate($this->psr7File(1, null), ['image/png']);
+                $this->fail('A file without type must be rejected.');
+            } catch (ValidationException $e) {
+                $this->assertSame('File array must contain type.', $e->getMessage());
+            }
+        }
+    }
+
+    public function testPsr7FileOfAllowedMimeType(): void
+    {
+        (new MimeTypeRule())->validate($this->psr7File(1, 'application/pdf'), ['application/pdf,text/plain']);
+        (new MimeTypeRule())->validate([$this->psr7File(1, 'text/plain'), $this->psr7File(1, 'application/pdf')], ['application/pdf,text/plain']);
+
+        $this->addToAssertionCount(2);
+    }
+
+    public function testPsr7FileOfAnotherMimeType(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type image/png. Allowed types: application/pdf, text/plain.');
+
+        (new MimeTypeRule())->validate($this->psr7File(1, 'image/png'), ['application/pdf,text/plain']);
+    }
+
+    public function testTheTypeRulesNeedTheAllowedTypesWhenTheFileIsPsr7(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Allowed MIME types must be specified.');
+
+        (new MimeTypeRule())->validate($this->psr7File(1, 'image/png'));
+    }
+
+    public function testNativeMultipleFilesWithAnUploadErrorThatIsNotAnArray(): void
+    {
+        $path = $this->createTempFile('a.txt');
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File at index 0 has upload error.');
+
+        (new FileRule())->validate(['tmp_name' => [$path], 'error' => UPLOAD_ERR_OK]);
+    }
+
+    public function testNativeMultipleFilesWithATmpNameThatIsNotAString(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File at index 0 does not exist.');
+
+        (new FileRule())->validate(['tmp_name' => [123], 'error' => [UPLOAD_ERR_OK]]);
     }
 }

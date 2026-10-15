@@ -28,6 +28,9 @@ final class RemoveSuffixRuleTest extends TestCase
         $this->rule = new RemoveSuffixRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('removeSuffixDataProvider')]
     public function testRemoveSuffix(string $input, array $parameters, string $expected): void
     {
@@ -42,6 +45,9 @@ final class RemoveSuffixRuleTest extends TestCase
         $result = $this->rule->sanitize($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function removeSuffixDataProvider(): array
     {
         return [

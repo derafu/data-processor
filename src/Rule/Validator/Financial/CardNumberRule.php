@@ -24,7 +24,7 @@ final class CardNumberRule implements ValidatorRuleInterface
         }
 
         // Remove spaces and dashes.
-        $number = preg_replace('/\D/', '', $value);
+        $number = preg_replace('/\D/', '', $value) ?? '';
 
         // Check length.
         if (strlen($number) < 13 || strlen($number) > 19) {

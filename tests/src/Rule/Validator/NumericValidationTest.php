@@ -31,8 +31,10 @@ use Derafu\DataProcessor\Rule\Validator\Numeric\RangeRule;
 use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
+use Derafu\DataProcessor\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Processor::class)]
@@ -52,6 +54,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(GreaterThanOrEqualRule::class)]
 #[CoversClass(LessThanRule::class)]
 #[CoversClass(LessThanOrEqualRule::class)]
+#[UsesClass(RuleSet::class)]
 final class NumericValidationTest extends TestCase
 {
     private ProcessorInterface $processor;
@@ -61,6 +64,9 @@ final class NumericValidationTest extends TestCase
         $this->processor = ProcessorFactory::create();
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('numericTypeValidationProvider')]
     public function testNumericTypeValidation(mixed $input, array $rules, bool $shouldPass): void
     {
@@ -77,6 +83,9 @@ final class NumericValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function numericTypeValidationProvider(): array
     {
         return [
@@ -133,6 +142,9 @@ final class NumericValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('digitsValidationProvider')]
     public function testDigitsValidation(string $input, array $rules, bool $shouldPass): void
     {
@@ -149,6 +161,9 @@ final class NumericValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function digitsValidationProvider(): array
     {
         return [
@@ -190,6 +205,9 @@ final class NumericValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('multipleOfValidationProvider')]
     public function testMultipleOfValidation(mixed $input, array $rules, bool $shouldPass): void
     {
@@ -206,6 +224,9 @@ final class NumericValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function multipleOfValidationProvider(): array
     {
         return [
@@ -242,6 +263,9 @@ final class NumericValidationTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('numberRangeValidationProvider')]
     public function testNumberRangeValidation(mixed $input, array $rules, bool $shouldPass): void
     {
@@ -258,6 +282,9 @@ final class NumericValidationTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function numberRangeValidationProvider(): array
     {
         return [

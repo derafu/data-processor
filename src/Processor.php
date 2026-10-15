@@ -32,51 +32,45 @@ final class Processor implements ProcessorInterface
     /**
      * {@inheritDoc}
      */
-    public function process(mixed $value, string|array $rules): mixed
+    public function process(mixed $value, string|array|RuleSet $rules): mixed
     {
-        // Parse rules to ensure an array in the correct format.
-        $rules = $this->parser->parse($rules);
+        // Parse rules to ensure a set of rules in the correct format.
+        $set = $rules instanceof RuleSet ? $rules : RuleSet::fromArray($this->parser->parse($rules));
 
         // First, apply caster rule (only one allowed).
-        if (isset($rules['cast'])) {
-            [$rule, $parameters] = $this->resolver->resolve('cast', $rules['cast']);
+        if ($set->cast !== null) {
+            [$rule, $parameters] = $this->resolver->resolve('cast', $set->cast);
             $value = $rule->cast($value, $parameters);
         }
 
         // Apply transformer rules.
-        if (isset($rules['transform'])) {
-            foreach ((array)$rules['transform'] as $ruleString) {
-                [$rule, $parameters] = $this->resolver->resolve('transform', $ruleString);
-                $value = $rule->transform($value, $parameters);
-            }
+        foreach ($set->transform as $ruleString) {
+            [$rule, $parameters] = $this->resolver->resolve('transform', $ruleString);
+            $value = $rule->transform($value, $parameters);
         }
 
         // Apply sanitizer rules.
-        if (isset($rules['sanitize'])) {
-            foreach ((array)$rules['sanitize'] as $ruleString) {
-                [$rule, $parameters] = $this->resolver->resolve('sanitize', $ruleString);
-                $value = $rule->sanitize($value, $parameters);
-            }
+        foreach ($set->sanitize as $ruleString) {
+            [$rule, $parameters] = $this->resolver->resolve('sanitize', $ruleString);
+            $value = $rule->sanitize($value, $parameters);
         }
 
         // Finally apply validator rules.
-        if (isset($rules['validate'])) {
-            $validationRules = (array)$rules['validate'];
+        $validationRules = $set->validate;
 
-            // Check if nullable rule is present to determine if empty values should be allowed.
-            $hasRequiredRule = $this->hasRequiredRule($validationRules);
+        // Check if nullable rule is present to determine if empty values should be allowed.
+        $hasRequiredRule = $this->hasRequiredRule($validationRules);
 
-            foreach ($validationRules as $ruleString) {
-                [$rule, $parameters] = $this->resolver->resolve('validate', $ruleString);
+        foreach ($validationRules as $ruleString) {
+            [$rule, $parameters] = $this->resolver->resolve('validate', $ruleString);
 
-                // If not required rules is enabled and value is empty, skip
-                // all the rules except the required rule.
-                if (!$hasRequiredRule && $this->isEmptyValue($value) && !$this->isRequiredRule($ruleString)) {
-                    continue;
-                }
-
-                $rule->validate($value, $parameters);
+            // If not required rules is enabled and value is empty, skip
+            // all the rules except the required rule.
+            if (!$hasRequiredRule && $this->isEmptyValue($value) && !$this->isRequiredRule($ruleString)) {
+                continue;
             }
+
+            $rule->validate($value, $parameters);
         }
 
         return $value;
@@ -85,7 +79,7 @@ final class Processor implements ProcessorInterface
     /**
      * Checks if the validation rules contain a required rule.
      *
-     * @param array $validationRules The validation rules to check.
+     * @param list<string> $validationRules The validation rules to check.
      * @return bool True if required rule is present, false otherwise.
      */
     private function hasRequiredRule(array $validationRules): bool

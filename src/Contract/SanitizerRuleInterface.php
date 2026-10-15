@@ -18,7 +18,7 @@ interface SanitizerRuleInterface
      * Sanitizes a value according to the rule.
      *
      * @param mixed $value The value to sanitize.
-     * @param array $parameters Optional parameters for the rule.
+     * @param list<string> $parameters Optional parameters for the rule.
      * @return mixed The sanitized value.
      */
     public function sanitize(mixed $value, array $parameters = []): mixed;

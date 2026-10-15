@@ -28,6 +28,9 @@ final class TrimRuleTest extends TestCase
         $this->rule = new TrimRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('trimDataProvider')]
     public function testTrim(string $input, array $parameters, string $expected): void
     {
@@ -42,6 +45,9 @@ final class TrimRuleTest extends TestCase
         $result = $this->rule->sanitize($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function trimDataProvider(): array
     {
         return [

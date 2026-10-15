@@ -28,6 +28,9 @@ final class MinLengthRuleTest extends TestCase
         $this->rule = new MinLengthRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('validMinLengthDataProvider')]
     public function testValidMinLength(mixed $value, array $parameters): void
     {
@@ -35,6 +38,9 @@ final class MinLengthRuleTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('invalidMinLengthDataProvider')]
     public function testInvalidMinLength(mixed $value, array $parameters): void
     {
@@ -48,6 +54,9 @@ final class MinLengthRuleTest extends TestCase
         $this->rule->validate('test', []);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function validMinLengthDataProvider(): array
     {
         return [
@@ -57,6 +66,9 @@ final class MinLengthRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidMinLengthDataProvider(): array
     {
         return [

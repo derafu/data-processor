@@ -25,8 +25,10 @@ use Derafu\DataProcessor\Rule\Validator\String\MinLengthRule;
 use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
+use Derafu\DataProcessor\RuleSet;
 use Derafu\TestsDataProcessor\Registrar\AlwaysRule;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -42,6 +44,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CompositeRuleRegistrar::class)]
 #[CoversClass(MinLengthRule::class)]
 #[CoversClass(UppercaseRule::class)]
+#[UsesClass(RuleSet::class)]
 final class ProcessorFactoryTest extends TestCase
 {
     public function testCreateDefaultHasTheDefaultRules(): void

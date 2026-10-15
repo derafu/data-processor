@@ -42,6 +42,9 @@ final class Base64RuleTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function base64DataProvider(): array
     {
         return [

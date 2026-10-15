@@ -28,6 +28,9 @@ final class InRuleTest extends TestCase
         $this->rule = new InRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('validInDataProvider')]
     public function testValidIn(mixed $value, array $parameters): void
     {
@@ -35,6 +38,9 @@ final class InRuleTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('invalidInDataProvider')]
     public function testInvalidIn(mixed $value, array $parameters): void
     {
@@ -48,6 +54,9 @@ final class InRuleTest extends TestCase
         $this->rule->validate('test', []);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function validInDataProvider(): array
     {
         return [
@@ -58,6 +67,9 @@ final class InRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidInDataProvider(): array
     {
         return [

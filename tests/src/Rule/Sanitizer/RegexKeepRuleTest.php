@@ -28,6 +28,9 @@ final class RegexKeepRuleTest extends TestCase
         $this->rule = new RegexKeepRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('regexKeepDataProvider')]
     public function testRegexKeep(string $input, array $parameters, string $expected): void
     {
@@ -42,6 +45,9 @@ final class RegexKeepRuleTest extends TestCase
         $result = $this->rule->sanitize($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function regexKeepDataProvider(): array
     {
         return [

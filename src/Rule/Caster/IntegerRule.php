@@ -25,6 +25,12 @@ final class IntegerRule implements CasterRuleInterface
         if (is_array($value)) {
             throw new CastingException('Cannot cast array to integer.');
         }
+        if ($value !== null && !is_scalar($value)) {
+            throw new CastingException([
+                'Cannot cast {type} to integer.',
+                'type' => get_debug_type($value),
+            ]);
+        }
         return (int)$value;
     }
 }

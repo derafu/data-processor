@@ -18,6 +18,11 @@ use JsonException;
 
 final class JsonToArrayRule implements TransformerRuleInterface
 {
+    /**
+     * {@inheritDoc}
+     *
+     * @return array<array-key, mixed>
+     */
     public function transform(mixed $value, array $parameters = []): array
     {
         if (is_string($value)) {

@@ -18,7 +18,7 @@ interface CasterRuleInterface
      * Casts a value to the specified type.
      *
      * @param mixed $value The value to cast.
-     * @param array $parameters Optional parameters for casting.
+     * @param list<string> $parameters Optional parameters for casting.
      * @return mixed The casted value.
      */
     public function cast(mixed $value, array $parameters = []): mixed;

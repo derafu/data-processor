@@ -42,6 +42,9 @@ final class LowercaseRuleTest extends TestCase
         $result = $this->rule->transform($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function lowercaseDataProvider(): array
     {
         return [

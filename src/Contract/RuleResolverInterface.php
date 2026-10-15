@@ -21,7 +21,12 @@ interface RuleResolverInterface
      *
      * @param string $type
      * @param string $ruleString
-     * @return array{0: object, 1: array} Rule instance and parameters.
+     * @return (
+     *   $type is 'cast' ? array{0: CasterRuleInterface, 1: list<string>} : (
+     *   $type is 'transform' ? array{0: TransformerRuleInterface, 1: list<string>} : (
+     *   $type is 'sanitize' ? array{0: SanitizerRuleInterface, 1: list<string>} :
+     *   array{0: ValidatorRuleInterface, 1: list<string>}
+     * ))) Rule instance and parameters.
      * @throws InvalidArgumentException When type is invalid.
      */
     public function resolve(string $type, string $ruleString): array;

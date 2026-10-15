@@ -28,6 +28,9 @@ final class RoundRuleTest extends TestCase
         $this->rule = new RoundRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('roundDataProvider')]
     public function testRound(mixed $input, array $parameters, mixed $expected): void
     {
@@ -43,6 +46,9 @@ final class RoundRuleTest extends TestCase
         $result = $this->rule->transform($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function roundDataProvider(): array
     {
         return [

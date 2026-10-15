@@ -57,14 +57,15 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
         // Case 4a: $_FILES native multiple (tmp_name is an array of paths).
         if (isset($value['tmp_name']) && is_array($value['tmp_name'])) {
             foreach ($value['tmp_name'] as $index => $tmpName) {
-                $error = $value['error'][$index] ?? UPLOAD_ERR_NO_FILE;
+                $errors = $value['error'] ?? null;
+                $error = is_array($errors) ? ($errors[$index] ?? UPLOAD_ERR_NO_FILE) : UPLOAD_ERR_NO_FILE;
                 if ($error !== UPLOAD_ERR_OK) {
                     throw new ValidationException([
                         'File at index {index} has upload error.',
                         'index' => $index,
                     ]);
                 }
-                if (!file_exists($tmpName)) {
+                if (!is_string($tmpName) || !file_exists($tmpName)) {
                     throw new ValidationException([
                         'File at index {index} does not exist.',
                         'index' => $index,
@@ -83,6 +84,74 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
         }
 
         throw new ValidationException('Invalid file format.');
+    }
+
+    /**
+     * The sizes that the value says its files have, in bytes.
+     *
+     * A PSR-7 file (or each one of a list of them) says it with `getSize()`,
+     * which is `null` when it is not known; any other value (the array of a
+     * file of `$_FILES`) says it with its `size` key, which is not there if
+     * the file has no size. Whoever reads them compares them, so what they are
+     * is not checked here.
+     *
+     * @param mixed $value The value that was validated with `validateFileArray()`.
+     * @return list<mixed> The sizes, one for each file.
+     */
+    protected function sizesOf(mixed $value): array
+    {
+        $files = $this->psr7Files($value);
+        if ($files !== null) {
+            return array_map(static fn (UploadedFileInterface $file): ?int => $file->getSize(), $files);
+        }
+
+        return [is_array($value) ? ($value['size'] ?? null) : null];
+    }
+
+    /**
+     * The MIME types that the value says its files have.
+     *
+     * A PSR-7 file (or each one of a list of them) says it with
+     * `getClientMediaType()`, which is `null` when it has none; any other value
+     * (the array of a file of `$_FILES`) says it with its `type` key. A file
+     * without type has `null`.
+     *
+     * @param mixed $value The value that was validated with `validateFileArray()`.
+     * @return list<mixed> The types, one for each file.
+     */
+    protected function typesOf(mixed $value): array
+    {
+        $files = $this->psr7Files($value);
+        if ($files !== null) {
+            return array_map(static fn (UploadedFileInterface $file): ?string => $file->getClientMediaType(), $files);
+        }
+
+        return [is_array($value) ? ($value['type'] ?? null) : null];
+    }
+
+    /**
+     * The PSR-7 files that the value is, or has inside as a list.
+     *
+     * @param mixed $value The value.
+     * @return list<UploadedFileInterface>|null `null` if the value is not a PSR-7
+     * file nor a list of them.
+     */
+    private function psr7Files(mixed $value): ?array
+    {
+        $available = interface_exists(UploadedFileInterface::class);
+
+        if ($available && $value instanceof UploadedFileInterface) {
+            return [$value];
+        }
+
+        if ($available && is_array($value) && isset($value[0]) && $value[0] instanceof UploadedFileInterface) {
+            return array_values(array_filter(
+                $value,
+                static fn (mixed $file): bool => $file instanceof UploadedFileInterface
+            ));
+        }
+
+        return null;
     }
 
     protected function parseSize(string $size): int

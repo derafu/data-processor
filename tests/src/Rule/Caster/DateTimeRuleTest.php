@@ -79,6 +79,9 @@ final class DateTimeRuleTest extends TestCase
         $this->fail('It should not be possible to cast this value.');
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function dateTimeCastDataProvider(): array
     {
         return [
@@ -98,6 +101,9 @@ final class DateTimeRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidDateTimeCastDataProvider(): array
     {
         return [

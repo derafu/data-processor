@@ -28,6 +28,9 @@ final class FloatRuleTest extends TestCase
         $this->rule = new FloatRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('floatCastDataProvider')]
     public function testFloatCast(mixed $input, array $parameters, float $expected): void
     {
@@ -42,6 +45,9 @@ final class FloatRuleTest extends TestCase
         $this->rule->cast($input);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function floatCastDataProvider(): array
     {
         return [
@@ -57,12 +63,16 @@ final class FloatRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidFloatCastDataProvider(): array
     {
         return [
             'non_numeric_string' => ['hello'],
             'mixed_string' => ['123.45abc'],
             'array' => [[1,2,3]],
+            'object' => [new \stdClass()],
         ];
     }
 }

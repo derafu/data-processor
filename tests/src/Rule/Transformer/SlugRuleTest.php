@@ -35,6 +35,9 @@ final class SlugRuleTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function slugDataProvider(): array
     {
         return [
@@ -56,6 +59,9 @@ final class SlugRuleTest extends TestCase
         $result = $this->rule->transform($input);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidSlugDataProvider(): array
     {
         return [

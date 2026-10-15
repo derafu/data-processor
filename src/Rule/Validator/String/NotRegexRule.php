@@ -12,10 +12,9 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Validator\String;
 
-use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 
-final class NotRegexRule implements ValidatorRuleInterface
+final class NotRegexRule extends AbstractRegexRule
 {
     public function validate(mixed $value, array $parameters = []): void
     {
@@ -27,11 +26,7 @@ final class NotRegexRule implements ValidatorRuleInterface
             throw new ValidationException('Regular expression pattern must be specified.');
         }
 
-        if (@preg_match($parameters[0], $value) === false) {
-            throw new ValidationException('Invalid regular expression pattern.');
-        }
-
-        if (preg_match($parameters[0], $value)) {
+        if ($this->matches($parameters[0], $value)) {
             throw new ValidationException('Value matches a pattern it should not match.');
         }
     }

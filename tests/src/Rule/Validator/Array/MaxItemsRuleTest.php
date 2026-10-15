@@ -28,6 +28,9 @@ final class MaxItemsRuleTest extends TestCase
         $this->rule = new MaxItemsRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('maxItemsDataProvider')]
     public function testMaxItems(mixed $value, array $parameters, bool $shouldPass): void
     {
@@ -42,6 +45,9 @@ final class MaxItemsRuleTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function maxItemsDataProvider(): array
     {
         return [

@@ -28,6 +28,9 @@ final class SubStringRuleTest extends TestCase
         $this->rule = new SubStringRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('substringDataProvider')]
     public function testSubstring(string $input, array $parameters, string $expected): void
     {
@@ -42,6 +45,9 @@ final class SubStringRuleTest extends TestCase
         $result = $this->rule->sanitize($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function substringDataProvider(): array
     {
         return [

@@ -42,6 +42,9 @@ final class HtmlEntitiesRuleTest extends TestCase
         $result = $this->rule->sanitize($value);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function htmlEntitiesDataProvider(): array
     {
         return [

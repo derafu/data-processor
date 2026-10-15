@@ -45,9 +45,24 @@ final class RuleRegistry implements RuleRegistryInterface
     private array $validatorRules = [];
 
     /**
-     * @var array<string-class,object>
+     * @var array<class-string<TransformerRuleInterface>,TransformerRuleInterface>
      */
-    private array $lazyRules = [];
+    private array $transformerInstances = [];
+
+    /**
+     * @var array<class-string<SanitizerRuleInterface>,SanitizerRuleInterface>
+     */
+    private array $sanitizerInstances = [];
+
+    /**
+     * @var array<class-string<CasterRuleInterface>,CasterRuleInterface>
+     */
+    private array $casterInstances = [];
+
+    /**
+     * @var array<class-string<ValidatorRuleInterface>,ValidatorRuleInterface>
+     */
+    private array $validatorInstances = [];
 
     /**
      * {@inheritDoc}
@@ -102,13 +117,9 @@ final class RuleRegistry implements RuleRegistryInterface
             ]);
         }
 
-        if (!isset($this->lazyRules[$this->transformerRules[$name]])) {
-            $this->lazyRules[$this->transformerRules[$name]] =
-                new $this->transformerRules[$name]()
-            ;
-        }
+        $class = $this->transformerRules[$name];
 
-        return $this->lazyRules[$this->transformerRules[$name]];
+        return $this->transformerInstances[$class] ??= new $class();
     }
 
     /**
@@ -124,13 +135,9 @@ final class RuleRegistry implements RuleRegistryInterface
             ]);
         }
 
-        if (!isset($this->lazyRules[$this->sanitizerRules[$name]])) {
-            $this->lazyRules[$this->sanitizerRules[$name]] =
-                new $this->sanitizerRules[$name]()
-            ;
-        }
+        $class = $this->sanitizerRules[$name];
 
-        return $this->lazyRules[$this->sanitizerRules[$name]];
+        return $this->sanitizerInstances[$class] ??= new $class();
     }
 
     /**
@@ -146,13 +153,9 @@ final class RuleRegistry implements RuleRegistryInterface
             ]);
         }
 
-        if (!isset($this->lazyRules[$this->casterRules[$name]])) {
-            $this->lazyRules[$this->casterRules[$name]] =
-                new $this->casterRules[$name]()
-            ;
-        }
+        $class = $this->casterRules[$name];
 
-        return $this->lazyRules[$this->casterRules[$name]];
+        return $this->casterInstances[$class] ??= new $class();
     }
 
     /**
@@ -168,12 +171,8 @@ final class RuleRegistry implements RuleRegistryInterface
             ]);
         }
 
-        if (!isset($this->lazyRules[$this->validatorRules[$name]])) {
-            $this->lazyRules[$this->validatorRules[$name]] =
-                new $this->validatorRules[$name]()
-            ;
-        }
+        $class = $this->validatorRules[$name];
 
-        return $this->lazyRules[$this->validatorRules[$name]];
+        return $this->validatorInstances[$class] ??= new $class();
     }
 }

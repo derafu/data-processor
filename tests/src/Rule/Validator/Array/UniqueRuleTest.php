@@ -42,6 +42,9 @@ final class UniqueRuleTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function uniqueDataProvider(): array
     {
         return [

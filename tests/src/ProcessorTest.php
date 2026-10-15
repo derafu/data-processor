@@ -48,8 +48,10 @@ use Derafu\DataProcessor\Rule\Validator\String\RequiredRule;
 use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
+use Derafu\DataProcessor\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Processor::class)]
@@ -85,6 +87,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MinLengthRule::class)]
 #[CoversClass(MaxLengthRule::class)]
 #[CoversClass(UppercaseRule::class)]
+#[UsesClass(RuleSet::class)]
 final class ProcessorTest extends TestCase
 {
     private ProcessorInterface $processor;
@@ -109,6 +112,9 @@ final class ProcessorTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function castingProvider(): array
     {
         return [
@@ -155,6 +161,9 @@ final class ProcessorTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('sanitizationProvider')]
     public function testSanitization(string $input, array $rules, string $expected): void
     {
@@ -164,6 +173,9 @@ final class ProcessorTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function sanitizationProvider(): array
     {
         return [
@@ -230,6 +242,9 @@ final class ProcessorTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $rules
+     */
     #[DataProvider('validationProvider')]
     public function testValidation(mixed $input, array $rules, bool $shouldPass): void
     {
@@ -246,6 +261,9 @@ final class ProcessorTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function validationProvider(): array
     {
         return [
@@ -373,6 +391,9 @@ final class ProcessorTest extends TestCase
         ]);
     }
 
+    /**
+     * @param string|array<string, string|list<string>> $rules
+     */
     #[DataProvider('notRequiredValidationDataProvider')]
     public function testNotRequiredValidation(mixed $value, string|array $rules, bool $shouldPass): void
     {
@@ -387,6 +408,9 @@ final class ProcessorTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function notRequiredValidationDataProvider(): array
     {
         return [

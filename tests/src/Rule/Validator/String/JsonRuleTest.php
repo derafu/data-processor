@@ -42,6 +42,9 @@ final class JsonRuleTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function jsonDataProvider(): array
     {
         return [

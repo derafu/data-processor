@@ -28,6 +28,9 @@ final class JsonToObjectRuleTest extends TestCase
         $this->rule = new JsonToObjectRule();
     }
 
+    /**
+     * @param array<array-key, mixed> $expectedProperties
+     */
     #[DataProvider('objectCastDataProvider')]
     public function testObjectCast(mixed $input, array $expectedProperties): void
     {
@@ -49,6 +52,9 @@ final class JsonToObjectRuleTest extends TestCase
         $this->rule->transform($input);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function objectCastDataProvider(): array
     {
         return [
@@ -71,6 +77,9 @@ final class JsonToObjectRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidObjectCastDataProvider(): array
     {
         return [

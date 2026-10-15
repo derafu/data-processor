@@ -20,7 +20,7 @@ interface ValidatorRuleInterface
      * Validates a value according to the rule.
      *
      * @param mixed $value The value to validate.
-     * @param array $parameters Optional parameters for validation.
+     * @param list<string> $parameters Optional parameters for validation.
      * @return void
      * @throws ValidationException If validation fails.
      */

@@ -71,21 +71,27 @@ final class TimestampRuleTest extends TestCase
         $this->fail('It should not be possible to cast this value.');
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function timestampCastDataProvider(): array
     {
-        $timestamp = Carbon::create(2024, 1, 15, 15, 30, 0)->timestamp;
+        $timestamp = Carbon::parse('2024-01-15 15:30:00')->timestamp;
 
         return [
             'numeric_timestamp' => [$timestamp, $timestamp],
             'string_timestamp' => [(string)$timestamp, $timestamp],
             'datetime_string' => ['2024-01-15 15:30:00', $timestamp],
-            'date_string' => ['2024-01-15', Carbon::create(2024, 1, 15, 0, 0, 0)->timestamp],
+            'date_string' => ['2024-01-15', Carbon::parse('2024-01-15 00:00:00')->timestamp],
             'carbon_instance' => [Carbon::create(2024, 1, 15, 15, 30, 0), $timestamp],
             'datetime_immutable' => [new DateTimeImmutable('2024-01-15 15:30:00'), $timestamp],
-            'relative_time' => ['tomorrow', Carbon::create(2024, 1, 2, 0, 0, 0)->timestamp],
+            'relative_time' => ['tomorrow', Carbon::parse('2024-01-02 00:00:00')->timestamp],
         ];
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidTimestampCastDataProvider(): array
     {
         return [

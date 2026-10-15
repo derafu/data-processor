@@ -28,6 +28,9 @@ final class JsonDecodeRuleTest extends TestCase
         $this->rule = new JsonDecodeRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('ValidJsonDecodeDataProvider')]
     public function testValidJsonDecode(mixed $input, array $parameters, mixed $expected): void
     {
@@ -35,6 +38,9 @@ final class JsonDecodeRuleTest extends TestCase
         $this->assertSame(json_encode($expected), json_encode($result));
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function ValidJsonDecodeDataProvider(): array
     {
         return [
@@ -51,6 +57,9 @@ final class JsonDecodeRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('invalidJsonDecodeDataProvider')]
     public function testInvalidJsonDecode(mixed $input, array $parameters): void
     {
@@ -59,6 +68,9 @@ final class JsonDecodeRuleTest extends TestCase
         $result = $this->rule->transform($input, $parameters);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidJsonDecodeDataProvider(): array
     {
         return [

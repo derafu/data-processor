@@ -42,6 +42,9 @@ final class SlugRuleTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function slugDataProvider(): array
     {
         return [

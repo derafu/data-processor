@@ -28,6 +28,9 @@ final class MinItemsRuleTest extends TestCase
         $this->rule = new MinItemsRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('minItemsDataProvider')]
     public function testMinItems(mixed $value, array $parameters, bool $shouldPass): void
     {
@@ -42,6 +45,9 @@ final class MinItemsRuleTest extends TestCase
         }
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function minItemsDataProvider(): array
     {
         return [

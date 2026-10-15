@@ -28,6 +28,9 @@ final class JsonToArrayRuleTest extends TestCase
         $this->rule = new JsonToArrayRule();
     }
 
+    /**
+     * @param array<array-key, mixed> $expected
+     */
     #[DataProvider('arrayCastDataProvider')]
     public function testArrayCast(mixed $input, array $expected): void
     {
@@ -42,6 +45,9 @@ final class JsonToArrayRuleTest extends TestCase
         $this->rule->transform($input);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function arrayCastDataProvider(): array
     {
         return [
@@ -52,6 +58,9 @@ final class JsonToArrayRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidArrayCastDataProvider(): array
     {
         return [

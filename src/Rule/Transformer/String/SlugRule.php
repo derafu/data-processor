@@ -25,18 +25,16 @@ final class SlugRule implements TransformerRuleInterface
 
         // Convert to ASCII.
         $value = transliterator_transliterate('Any-Latin; Latin-ASCII', $value);
-        if ($value === false) {
-            throw new TransformationException('Error converting the value to ASCII.');
-        }
+        $value = $value === false ? throw new TransformationException('Error converting the value to ASCII.') : $value;
 
         // Convert to lowercase.
         $value = mb_strtolower($value);
 
         // Replace spaces and special characters with dashes.
-        $value = preg_replace('/[^a-z0-9-]/', '-', $value);
+        $value = preg_replace('/[^a-z0-9-]/', '-', $value) ?? throw new TransformationException('Error replacing the characters of the value.');
 
         // Remove multiple consecutive dashes.
-        $value = preg_replace('/-+/', '-', $value);
+        $value = preg_replace('/-+/', '-', $value) ?? throw new TransformationException('Error replacing the characters of the value.');
 
         // Trim leading and trailing dashes.
         return trim($value, '-');

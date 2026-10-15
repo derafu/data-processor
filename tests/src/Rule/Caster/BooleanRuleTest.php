@@ -34,6 +34,9 @@ final class BooleanRuleTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function booleanCastDataProvider(): array
     {
         return [

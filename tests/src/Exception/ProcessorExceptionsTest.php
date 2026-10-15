@@ -49,22 +49,22 @@ use Throwable;
 final class ProcessorExceptionsTest extends TestCase
 {
     /**
-     * @return array<string, array{Closure(mixed ...): ProcessorException}>
+     * @return array<string, array{Closure(string|array<mixed>|TranslatableInterface): ProcessorException}>
      */
     public static function exceptionsProvider(): array
     {
         return [
-            'processor' => [fn (mixed ...$a) => new ProcessorException(...$a)],
-            'casting' => [fn (mixed ...$a) => new CastingException(...$a)],
-            'rule not found' => [fn (mixed ...$a) => new RuleNotFoundException(...$a)],
-            'sanitization' => [fn (mixed ...$a) => new SanitizationException(...$a)],
-            'transformation' => [fn (mixed ...$a) => new TransformationException(...$a)],
-            'validation' => [fn (mixed ...$a) => new ValidationException(...$a)],
+            'processor' => [fn (string|array|TranslatableInterface $message) => new ProcessorException($message)],
+            'casting' => [fn (string|array|TranslatableInterface $message) => new CastingException($message)],
+            'rule not found' => [fn (string|array|TranslatableInterface $message) => new RuleNotFoundException($message)],
+            'sanitization' => [fn (string|array|TranslatableInterface $message) => new SanitizationException($message)],
+            'transformation' => [fn (string|array|TranslatableInterface $message) => new TransformationException($message)],
+            'validation' => [fn (string|array|TranslatableInterface $message) => new ValidationException($message)],
         ];
     }
 
     /**
-     * @param Closure(mixed ...): ProcessorException $create
+     * @param Closure(string|array<mixed>|TranslatableInterface): ProcessorException $create
      */
     #[DataProvider('exceptionsProvider')]
     public function testEveryExceptionIsTranslatable(Closure $create): void
@@ -82,7 +82,7 @@ final class ProcessorExceptionsTest extends TestCase
      * message from the formatted text, losing the id and the parameters, so
      * only the messages without parameters were translated.
      *
-     * @param Closure(mixed ...): ProcessorException $create
+     * @param Closure(string|array<mixed>|TranslatableInterface): ProcessorException $create
      */
     #[DataProvider('exceptionsProvider')]
     public function testTheTranslationKeepsTheIdAndTheParameters(Closure $create): void

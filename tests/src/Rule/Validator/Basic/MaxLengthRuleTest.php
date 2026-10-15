@@ -28,6 +28,9 @@ final class MaxLengthRuleTest extends TestCase
         $this->rule = new MaxLengthRule();
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('validMaxLengthDataProvider')]
     public function testValidMaxLength(mixed $value, array $parameters): void
     {
@@ -35,6 +38,9 @@ final class MaxLengthRuleTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    /**
+     * @param list<string> $parameters
+     */
     #[DataProvider('invalidMaxLengthDataProvider')]
     public function testInvalidMaxLength(mixed $value, array $parameters): void
     {
@@ -48,6 +54,9 @@ final class MaxLengthRuleTest extends TestCase
         $this->rule->validate('test', []);
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function validMaxLengthDataProvider(): array
     {
         return [
@@ -58,6 +67,9 @@ final class MaxLengthRuleTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
     public static function invalidMaxLengthDataProvider(): array
     {
         return [
