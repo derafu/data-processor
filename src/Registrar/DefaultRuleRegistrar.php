@@ -206,6 +206,7 @@ final class DefaultRuleRegistrar implements RuleRegistrarInterface
             ->addValidatorRule('not_regex', Validator\String\NotRegexRule::class)
             ->addValidatorRule('no_whitespace', Validator\String\NoWhitespaceRule::class)
             ->addValidatorRule('regex', Validator\String\RegexRule::class)
+            ->addValidatorRule('regex_pattern', Validator\String\RegexPatternRule::class)
             ->addValidatorRule('required', Validator\String\RequiredRule::class)
             ->addValidatorRule('slug', Validator\String\SlugRule::class)
             ->addValidatorRule('starts_with', Validator\String\StartsWithRule::class)
