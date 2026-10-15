@@ -1,7 +1,17 @@
 services:
 
+    # The default rules are always registered. The registrars tagged with
+    # `derafu_data_processor.rule_registrar` add more (e.g. the rules of a
+    # country). The tag is explicit because _instanceof does not propagate across
+    # imported files.
     Derafu\DataProcessor\Contract\ProcessorInterface:
         factory: ['Derafu\DataProcessor\ProcessorFactory', 'create']
+        arguments:
+            $configurator: '@Derafu\DataProcessor\Registrar\CompositeRuleRegistrar'
+
+    Derafu\DataProcessor\Registrar\CompositeRuleRegistrar:
+        arguments:
+            $registrars: !tagged_iterator derafu_data_processor.rule_registrar
 
     Derafu\DataProcessor\Contract\RuleResolverInterface:
         class: Derafu\DataProcessor\RuleResolver
