@@ -22,7 +22,9 @@ use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Rule\Validator\Internet\IpRule;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
+use Derafu\DataProcessor\Translation\DataProcessorTranslationResourceProvider;
 use Derafu\Translation\Contract\TranslatableInterface;
+use Derafu\Translation\TranslatorFactory;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -43,6 +45,7 @@ use Throwable;
 #[CoversClass(RuleRegistry::class)]
 #[CoversClass(RuleResolver::class)]
 #[CoversClass(IpRule::class)]
+#[CoversClass(DataProcessorTranslationResourceProvider::class)]
 final class ProcessorExceptionsTest extends TestCase
 {
     /**
@@ -71,6 +74,31 @@ final class ProcessorExceptionsTest extends TestCase
         $this->assertInstanceOf(RuntimeException::class, $exception);
         $this->assertInstanceOf(TranslatableInterface::class, $exception);
         $this->assertSame('Failed because it is late.', $exception->getMessage());
+    }
+
+    /**
+     * The exceptions inherit the constructor of ProcessorException. Declaring
+     * the trait again in a subclass made the parent constructor rebuild the
+     * message from the formatted text, losing the id and the parameters, so
+     * only the messages without parameters were translated.
+     *
+     * @param Closure(mixed ...): ProcessorException $create
+     */
+    #[DataProvider('exceptionsProvider')]
+    public function testTheTranslationKeepsTheIdAndTheParameters(Closure $create): void
+    {
+        $exception = $create(['Must be at least {min} characters long.', 'min' => 3]);
+
+        $message = $exception->getTranslatableMessage();
+        $this->assertSame('Must be at least {min} characters long.', $message->getMessage());
+        $this->assertSame(['min' => 3], $message->getParameters());
+
+        $translator = TranslatorFactory::create(
+            'es',
+            ['en'],
+            [new DataProcessorTranslationResourceProvider()]
+        );
+        $this->assertSame('Debe tener al menos 3 caracteres.', $exception->trans($translator));
     }
 
     /**
