@@ -134,6 +134,10 @@ final class DefaultRuleRegistrar implements RuleRegistrarInterface
             ->addValidatorRule('notempty', Validator\Array\NotEmptyRule::class)
             ->addValidatorRule('unique', Validator\Array\UniqueRule::class)
 
+            // Boolean validation.
+            ->addValidatorRule('accepted', Validator\Boolean\AcceptedRule::class)
+            ->addValidatorRule('declined', Validator\Boolean\DeclinedRule::class)
+
             // Date validation.
             ->addValidatorRule('after_or_equal', Validator\Date\AfterOrEqualRule::class)
             ->addValidatorRule('after', Validator\Date\AfterRule::class)
