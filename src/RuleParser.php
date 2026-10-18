@@ -56,6 +56,13 @@ final class RuleParser implements RuleParserInterface
     /**
      * Parses rules from string format.
      *
+     * The string is split by white space into groups, and each group is split
+     * by `|` into rules. Because of that, a rule that has a `|` or a white
+     * space in its parameter can not be written in this format: `regex:/a|b/`
+     * becomes two rules, and `date_format:d, M Y` becomes three groups. Give
+     * those rules in array format, as a list of strings per category (see
+     * `RuleSet::fromArray()`), where nothing is split.
+     *
      * @param string $rules
      * @return array{transform?: list<string>, sanitize?: list<string>, cast?: string, validate?: list<string>}
      */

@@ -14,9 +14,10 @@ namespace Derafu\DataProcessor\Rule\Validator\Date;
 
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
+use Derafu\DataProcessor\Contract\RawParameterInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 
-final class BeforeOrEqualRule extends AbstractDateRule
+final class BeforeOrEqualRule extends AbstractDateRule implements RawParameterInterface
 {
     public function validate(mixed $value, array $parameters = []): void
     {

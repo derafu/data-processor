@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor;
 
+use Derafu\DataProcessor\Contract\RawParameterInterface;
 use Derafu\DataProcessor\Contract\RuleRegistryInterface;
 use Derafu\DataProcessor\Contract\RuleResolverInterface;
 use Derafu\Translation\Exception\Logic\TranslatableInvalidArgumentException as InvalidArgumentException;
@@ -34,7 +35,6 @@ final class RuleResolver implements RuleResolverInterface
         // Parse rule string (e.g., "min:5" into ["min", ["5"]]).
         $parts = explode(':', $ruleString, 2);
         $ruleName = $parts[0];
-        $parameters = isset($parts[1]) ? explode(',', $parts[1]) : [];
 
         // Get appropriate rule instance.
         $rule = match($type) {
@@ -43,6 +43,14 @@ final class RuleResolver implements RuleResolverInterface
             'sanitize' => $this->registry->getSanitizerRule($ruleName),
             'validate' => $this->registry->getValidatorRule($ruleName),
             default => throw new InvalidArgumentException(['Invalid rule type: {type}', 'type' => $type])
+        };
+
+        // The parameters are split by comma, except for a rule that takes one
+        // literal: it gets all of it.
+        $parameters = match (true) {
+            !isset($parts[1]) => [],
+            $rule instanceof RawParameterInterface => [$parts[1]],
+            default => explode(',', $parts[1]),
         };
 
         return [$rule, $parameters];

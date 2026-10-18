@@ -15,6 +15,7 @@ namespace Derafu\DataProcessor;
 use Derafu\DataProcessor\Contract\ProcessorInterface;
 use Derafu\DataProcessor\Contract\RuleParserInterface;
 use Derafu\DataProcessor\Contract\RuleResolverInterface;
+use Derafu\DataProcessor\Support\Value;
 
 /**
  * Main processor that applies rules in order.
@@ -66,7 +67,7 @@ final class Processor implements ProcessorInterface
 
             // If not required rules is enabled and value is empty, skip
             // all the rules except the required rule.
-            if (!$hasRequiredRule && $this->isEmptyValue($value) && !$this->isRequiredRule($ruleString)) {
+            if (!$hasRequiredRule && Value::isEmpty($value) && !$this->isRequiredRule($ruleString)) {
                 continue;
             }
 
@@ -102,16 +103,5 @@ final class Processor implements ProcessorInterface
     private function isRequiredRule(string $ruleString): bool
     {
         return str_starts_with($ruleString, 'required');
-    }
-
-    /**
-     * Checks if a value is considered empty for nullable validation.
-     *
-     * @param mixed $value The value to check.
-     * @return bool True if the value is empty, false otherwise.
-     */
-    private function isEmptyValue(mixed $value): bool
-    {
-        return $value === null || $value === '' || $value === [];
     }
 }

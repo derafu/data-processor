@@ -17,9 +17,11 @@ use Derafu\DataProcessor\Rule\Validator\File\AbstractFileRule;
 use Derafu\DataProcessor\Rule\Validator\File\FileRule;
 use Derafu\DataProcessor\Rule\Validator\File\ImageRule;
 use Derafu\DataProcessor\Rule\Validator\File\MimeTypeRule;
+use Derafu\DataProcessor\ValueObject\FileInfo;
 use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\UploadedFileInterface;
 
@@ -27,6 +29,7 @@ use Psr\Http\Message\UploadedFileInterface;
 #[CoversClass(ImageRule::class)]
 #[CoversClass(FileRule::class)]
 #[CoversClass(MimeTypeRule::class)]
+#[UsesClass(FileInfo::class)]
 final class FileValidationTest extends TestCase
 {
     private string $tempDir;
@@ -144,7 +147,7 @@ final class FileValidationTest extends TestCase
                     'type' => 'application/pdf',
                     'error' => UPLOAD_ERR_OK,
                 ],
-                ['mimetype', 'application/pdf,application/x-pdf'],
+                ['mimetype', 'application/pdf', 'application/x-pdf'],
                 true,
             ],
             'invalid_mime_type' => [
@@ -153,7 +156,7 @@ final class FileValidationTest extends TestCase
                     'type' => 'application/x-msdownload',
                     'error' => UPLOAD_ERR_OK,
                 ],
-                ['mimetype', 'application/pdf,application/x-pdf'],
+                ['mimetype', 'application/pdf', 'application/x-pdf'],
                 false,
             ],
         ];
@@ -272,11 +275,24 @@ final class FileValidationTest extends TestCase
         $rule->validate(['foo' => 'bar']);
     }
 
+    public function testListWithAnElementThatIsNotAFileIsInvalidFormat(): void
+    {
+        $path = $this->createTempFile('list.txt');
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file format.');
+
+        $this->makeConcreteRule()->validate([
+            ['tmp_name' => $path, 'error' => UPLOAD_ERR_OK],
+            'not-a-file',
+        ]);
+    }
+
     public function testEmptyArrayThrowsInvalidFormat(): void
     {
         // The validator itself has no concept of "optional" — an empty array
         // is currently an invalid format. Skipping for optional fields is the
-        // pipeline's responsibility (Processor::isEmptyValue).
+        // pipeline's responsibility (Value::isEmpty).
         $rule = $this->makeConcreteRule();
         $this->expectException(ValidationException::class);
         $rule->validate([]);
@@ -423,8 +439,8 @@ final class FileValidationTest extends TestCase
 
     public function testPsr7FileOfAllowedMimeType(): void
     {
-        (new MimeTypeRule())->validate($this->psr7File(1, 'application/pdf'), ['application/pdf,text/plain']);
-        (new MimeTypeRule())->validate([$this->psr7File(1, 'text/plain'), $this->psr7File(1, 'application/pdf')], ['application/pdf,text/plain']);
+        (new MimeTypeRule())->validate($this->psr7File(1, 'application/pdf'), ['application/pdf', 'text/plain']);
+        (new MimeTypeRule())->validate([$this->psr7File(1, 'text/plain'), $this->psr7File(1, 'application/pdf')], ['application/pdf', 'text/plain']);
 
         $this->addToAssertionCount(2);
     }
@@ -434,7 +450,7 @@ final class FileValidationTest extends TestCase
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Invalid file type image/png. Allowed types: application/pdf, text/plain.');
 
-        (new MimeTypeRule())->validate($this->psr7File(1, 'image/png'), ['application/pdf,text/plain']);
+        (new MimeTypeRule())->validate($this->psr7File(1, 'image/png'), ['application/pdf', 'text/plain']);
     }
 
     public function testTheTypeRulesNeedTheAllowedTypesWhenTheFileIsPsr7(): void

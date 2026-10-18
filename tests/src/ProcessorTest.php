@@ -49,6 +49,7 @@ use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use Derafu\DataProcessor\RuleSet;
+use Derafu\DataProcessor\Support\Value;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -88,6 +89,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MaxLengthRule::class)]
 #[CoversClass(UppercaseRule::class)]
 #[UsesClass(RuleSet::class)]
+#[UsesClass(Value::class)]
 final class ProcessorTest extends TestCase
 {
     private ProcessorInterface $processor;
@@ -276,6 +278,31 @@ final class ProcessorTest extends TestCase
                 '',
                 ['required'],
                 false,
+            ],
+            'required_null_invalid' => [
+                null,
+                ['required'],
+                false,
+            ],
+            'required_empty_array_invalid' => [
+                [],
+                ['required'],
+                false,
+            ],
+            'required_array_valid' => [
+                ['a'],
+                ['required'],
+                true,
+            ],
+            'required_zero_string_valid' => [
+                '0',
+                ['required'],
+                true,
+            ],
+            'required_false_valid' => [
+                false,
+                ['required'],
+                true,
             ],
             'min_length_valid' => [
                 'hello',

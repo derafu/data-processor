@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Sanitizer;
 
+use Derafu\DataProcessor\Contract\RawParameterInterface;
 use Derafu\DataProcessor\Contract\SanitizerRuleInterface;
 use Derafu\DataProcessor\Exception\SanitizationException;
 
-final class TrimRule implements SanitizerRuleInterface
+final class TrimRule implements SanitizerRuleInterface, RawParameterInterface
 {
     public function sanitize(mixed $value, array $parameters = []): mixed
     {

@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Transformer\String;
 
+use Derafu\DataProcessor\Contract\RawParameterInterface;
 use Derafu\DataProcessor\Contract\TransformerRuleInterface;
 use Derafu\DataProcessor\Exception\TransformationException;
 
-final class TransliterateRule implements TransformerRuleInterface
+final class TransliterateRule implements TransformerRuleInterface, RawParameterInterface
 {
     public function transform(mixed $value, array $parameters = []): mixed
     {

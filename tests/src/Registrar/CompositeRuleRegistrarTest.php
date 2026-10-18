@@ -26,6 +26,7 @@ use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use Derafu\DataProcessor\RuleSet;
+use Derafu\DataProcessor\Support\Value;
 use Generator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -43,6 +44,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RuleResolver::class)]
 #[CoversClass(MinLengthRule::class)]
 #[UsesClass(RuleSet::class)]
+#[UsesClass(Value::class)]
 final class CompositeRuleRegistrarTest extends TestCase
 {
     public function testWithoutRegistrarsItRegistersNothing(): void

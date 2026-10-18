@@ -13,14 +13,16 @@ declare(strict_types=1);
 namespace Derafu\DataProcessor\Rule\Validator\File;
 
 use Derafu\DataProcessor\Exception\ValidationException;
+use Derafu\DataProcessor\ValueObject\FileInfo;
 
 final class MimeTypeRule extends AbstractFileRule
 {
     public function validate(mixed $value, array $parameters = []): void
     {
-        $this->validateFileArray($value);
-
-        $types = $this->typesOf($value);
+        $types = array_map(
+            static fn (FileInfo $file): ?string => $file->type,
+            $this->validateFileArray($value)
+        );
         if (in_array(null, $types, true)) {
             throw new ValidationException('File array must contain type.');
         }
@@ -29,7 +31,7 @@ final class MimeTypeRule extends AbstractFileRule
             throw new ValidationException('Allowed MIME types must be specified.');
         }
 
-        $allowedTypes = explode(',', $parameters[0]);
+        $allowedTypes = array_map('trim', $parameters);
         foreach ($types as $type) {
             if (!in_array($type, $allowedTypes)) {
                 throw new ValidationException([

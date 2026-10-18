@@ -31,6 +31,7 @@ use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use Derafu\DataProcessor\RuleSet;
+use Derafu\DataProcessor\Support\Value;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -52,6 +53,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(WeekdayRule::class)]
 #[CoversClass(WeekendRule::class)]
 #[UsesClass(RuleSet::class)]
+#[UsesClass(Value::class)]
 final class DateValidationTest extends TestCase
 {
     private ProcessorInterface $processor;
@@ -127,7 +129,7 @@ final class DateValidationTest extends TestCase
                 false,
             ],
             'invalid_custom_format_1' => [
-                'Feb 15, 2024',
+                'Feb 15 2024',
                 ['date_format:M d, Y'],
                 false,
             ],

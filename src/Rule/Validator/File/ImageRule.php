@@ -26,9 +26,10 @@ final class ImageRule extends AbstractFileRule
 
     public function validate(mixed $value, array $parameters = []): void
     {
-        $this->validateFileArray($value);
+        $files = $this->validateFileArray($value);
 
-        foreach ($this->typesOf($value) as $type) {
+        foreach ($files as $file) {
+            $type = $file->type;
             if ($type === null) {
                 throw new ValidationException('File array must contain type.');
             }
@@ -40,8 +41,8 @@ final class ImageRule extends AbstractFileRule
 
         if (isset($parameters[0])) {
             $maxSize = $this->parseSize($parameters[0]);
-            foreach ($this->sizesOf($value) as $size) {
-                if ($size > $maxSize) {
+            foreach ($files as $file) {
+                if ($file->size !== null && $file->size > $maxSize) {
                     throw new ValidationException([
                         'Image must not be larger than {max}.',
                         'max' => $parameters[0],

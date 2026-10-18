@@ -25,6 +25,7 @@ use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use Derafu\DataProcessor\RuleSet;
+use Derafu\DataProcessor\Support\Value;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -48,6 +49,7 @@ use stdClass;
 #[UsesClass(TrimRule::class)]
 #[UsesClass(LowercaseRule::class)]
 #[UsesClass(MinLengthRule::class)]
+#[UsesClass(Value::class)]
 final class RuleSetTest extends TestCase
 {
     #[Test]

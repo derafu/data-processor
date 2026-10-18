@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Validator\String;
 
+use Derafu\DataProcessor\Contract\RawParameterInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 
-final class RegexRule extends AbstractRegexRule
+final class RegexRule extends AbstractRegexRule implements RawParameterInterface
 {
     public function validate(mixed $value, array $parameters = []): void
     {

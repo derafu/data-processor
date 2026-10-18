@@ -143,7 +143,6 @@ return [
     'The rules have a category that is not known: {category}. The categories are: {categories}.' => 'Las reglas tienen una categoría que no se conoce: {category}. Las categorías son: {categories}.',
     'The rules of the category "{category}" must be a string or a list of strings, {given} given.' => 'Las reglas de la categoría "{category}" deben ser un string o una lista de strings, se entregó {given}.',
     'Transformer rule "{name}" not found. Available rules: {rules}.' => 'No se encontró la regla de transformación "{name}". Reglas disponibles: {rules}.',
-    'Uploaded file has error.' => 'El archivo subido tiene un error.',
     'Validator rule "{name}" not found. Available rules: {rules}.' => 'No se encontró la regla de validación "{name}". Reglas disponibles: {rules}.',
     'Value does not match the required pattern.' => 'El valor no coincide con el patrón requerido.',
     'Value matches a pattern it should not match.' => 'El valor coincide con un patrón que no debería coincidir.',

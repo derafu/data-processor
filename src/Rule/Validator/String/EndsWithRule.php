@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Validator\String;
 
+use Derafu\DataProcessor\Contract\RawParameterInterface;
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 
-final class EndsWithRule implements ValidatorRuleInterface
+final class EndsWithRule implements ValidatorRuleInterface, RawParameterInterface
 {
     public function validate(mixed $value, array $parameters = []): void
     {

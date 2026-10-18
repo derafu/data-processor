@@ -52,6 +52,10 @@ final readonly class RuleSet
      * `|`). A key whose value is `null` is taken as absent. The rules that are
      * given as a list are kept as they are.
      *
+     * A category given as a string is split by `|`, so a rule that has a `|` in
+     * its parameter (`regex:/a|b/`) must be given in the list. A list is the
+     * only way to give it, here and in the string format of `RuleParser`.
+     *
      * @param array<array-key, mixed> $rules The rules in array format.
      * @throws ProcessorException If a key is not a category of rules, or its
      * value is not what the category has.
