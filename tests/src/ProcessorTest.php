@@ -49,7 +49,6 @@ use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use Derafu\DataProcessor\RuleSet;
-use Derafu\DataProcessor\Support\Value;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -89,7 +88,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MaxLengthRule::class)]
 #[CoversClass(UppercaseRule::class)]
 #[UsesClass(RuleSet::class)]
-#[UsesClass(Value::class)]
 final class ProcessorTest extends TestCase
 {
     private ProcessorInterface $processor;

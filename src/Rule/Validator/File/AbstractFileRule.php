@@ -15,50 +15,85 @@ namespace Derafu\DataProcessor\Rule\Validator\File;
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\ValueObject\FileInfo;
+use Derafu\Support\File;
 use Psr\Http\Message\UploadedFileInterface;
+use RuntimeException;
 
 abstract class AbstractFileRule implements ValidatorRuleInterface
 {
     /**
+     * Option of the rules, as a parameter: the files can be empty (0 bytes).
+     */
+    private const ALLOW_EMPTY = 'allow_empty';
+
+    /**
+     * Bytes of the start of a file that are read to know its type. It is the
+     * most that `libmagic` reads.
+     */
+    private const START_BYTES = 1048576;
+
+    /**
+     * Separates the option `allow_empty` from the parameters of the rule.
+     *
+     * The option can be in any position, so the other parameters keep theirs.
+     *
+     * @param list<string> $parameters The parameters of the rule.
+     * @return array{list<string>, bool} The parameters without the option, and
+     * whether the option was there.
+     */
+    protected function splitAllowEmpty(array $parameters): array
+    {
+        $rest = array_values(array_filter(
+            $parameters,
+            static fn (string $parameter): bool => $parameter !== self::ALLOW_EMPTY
+        ));
+
+        return [$rest, count($rest) !== count($parameters)];
+    }
+
+    /**
      * Validates that the value is an uploaded file, or a list of them, and
      * returns the files.
      *
-     * Each file must have no upload error and, if it has a path on the disk, be
-     * there.
+     * Each file must have no upload error, be on the disk if it has a path
+     * there, and not be empty (0 bytes) unless it is allowed. A file that does
+     * not say its size is not rejected as empty.
      *
      * @param mixed $value The value to validate: a file, or a list of them. See
      * `fileFrom()` and `filesFrom()` for the shapes that they can have.
+     * @param bool $allowEmpty Whether the files can be empty.
      * @return list<FileInfo> The files of the value, in order.
      * @throws ValidationException If the value is not an uploaded file, or a
      * list of them, or one of its files is not valid.
      */
-    protected function validateFileArray(mixed $value): array
+    protected function validateFileArray(mixed $value, bool $allowEmpty = false): array
     {
         $file = $this->fileFrom($value);
         if ($file !== null) {
-            $this->checkFile($file, null);
+            $this->checkFile($file, null, $allowEmpty);
 
             return [$file];
         }
 
         $files = $this->filesFrom($value);
         foreach ($files as $index => $file) {
-            $this->checkFile($file, $index);
+            $this->checkFile($file, $index, $allowEmpty);
         }
 
         return array_values($files);
     }
 
     /**
-     * Checks that a file has no upload error and, if it has a path on the disk,
-     * that it is there.
+     * Checks that a file has no upload error, that it is on the disk if it has
+     * a path there, and that it is not empty unless it is allowed.
      *
      * @param FileInfo $file The file.
      * @param int|string|null $index The position or key of the file in the list
      * it came in, `null` if it did not come in a list.
+     * @param bool $allowEmpty Whether the file can be empty.
      * @throws ValidationException If the file is not valid.
      */
-    private function checkFile(FileInfo $file, int|string|null $index): void
+    private function checkFile(FileInfo $file, int|string|null $index, bool $allowEmpty): void
     {
         if ($file->error !== UPLOAD_ERR_OK) {
             throw $index === null
@@ -70,6 +105,12 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
             throw $index === null
                 ? new ValidationException('File does not exist.')
                 : new ValidationException(['File at index {index} does not exist.', 'index' => $index]);
+        }
+
+        if (!$allowEmpty && $file->size === 0) {
+            throw $index === null
+                ? new ValidationException('File is empty.')
+                : new ValidationException(['File at index {index} is empty.', 'index' => $index]);
         }
     }
 
@@ -91,7 +132,8 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
                 $value->getError(),
                 null,
                 $value->getSize(),
-                $value->getClientMediaType()
+                $value->getClientFilename(),
+                $value
             );
         }
 
@@ -102,7 +144,7 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
                 is_int($error) ? $error : UPLOAD_ERR_NO_FILE,
                 $value['tmp_name'],
                 $this->sizeFrom($value['size'] ?? null),
-                $this->typeFrom($value['type'] ?? null)
+                $this->nameFrom($value['name'] ?? null)
             );
         }
 
@@ -136,7 +178,7 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
         if (isset($value['tmp_name']) && is_array($value['tmp_name'])) {
             $errors = $value['error'] ?? null;
             $sizes = $value['size'] ?? null;
-            $types = $value['type'] ?? null;
+            $names = $value['name'] ?? null;
 
             $files = [];
             foreach ($value['tmp_name'] as $index => $tmpName) {
@@ -145,7 +187,7 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
                     is_int($error) ? $error : UPLOAD_ERR_NO_FILE,
                     is_string($tmpName) ? $tmpName : '',
                     $this->sizeFrom(is_array($sizes) ? ($sizes[$index] ?? null) : null),
-                    $this->typeFrom(is_array($types) ? ($types[$index] ?? null) : null)
+                    $this->nameFrom(is_array($names) ? ($names[$index] ?? null) : null)
                 );
             }
 
@@ -186,26 +228,67 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
     }
 
     /**
-     * The MIME type that a `$_FILES` array says its file has.
+     * The name that a `$_FILES` array says its file has.
      *
-     * @param mixed $type What the `type` key has, if it has anything.
-     * @return string|null `null` if it is not a string: the file has no type.
+     * @param mixed $name What the `name` key has, if it has anything.
+     * @return string|null `null` if it is not a string: the file has no name.
      */
-    private function typeFrom(mixed $type): ?string
+    private function nameFrom(mixed $name): ?string
     {
-        return is_string($type) ? $type : null;
+        return is_string($name) ? $name : null;
     }
 
+    /**
+     * Reads the start of the content of a PSR-7 file, to know its type.
+     *
+     * The stream is left in the position that it had. A stream that can not be
+     * moved is not read, because reading it would take the content from whoever
+     * uses it next.
+     *
+     * @param UploadedFileInterface $upload The file.
+     * @return string|null The first bytes of the content, or `null` if they
+     * can not be read: the stream is not available, can not be moved or fails.
+     */
+    protected function startOf(UploadedFileInterface $upload): ?string
+    {
+        try {
+            $stream = $upload->getStream();
+            if (!$stream->isSeekable()) {
+                return null;
+            }
+
+            $position = $stream->tell();
+            $stream->rewind();
+
+            try {
+                $content = '';
+                while (strlen($content) < self::START_BYTES && !$stream->eof()) {
+                    $chunk = $stream->read(self::START_BYTES - strlen($content));
+                    if ($chunk === '') {
+                        break;
+                    }
+                    $content .= $chunk;
+                }
+            } finally {
+                $stream->seek($position);
+            }
+
+            return $content;
+        } catch (RuntimeException) {
+            return null;
+        }
+    }
+
+    /**
+     * Reads the maximum size that a rule has as a parameter.
+     *
+     * @param string $size The size, as `File::parseSize()` reads it (`2048`,
+     * `2M`, `1.5Mi`).
+     * @return int The size in bytes.
+     * @throws ValidationException If the size is not valid.
+     */
     protected function parseSize(string $size): int
     {
-        $units = ['B' => 1, 'K' => 1024, 'M' => 1024 * 1024, 'G' => 1024 * 1024 * 1024];
-        $unit = strtoupper(substr($size, -1));
-        $value = (int)substr($size, 0, -1);
-
-        if (!isset($units[$unit])) {
-            throw new ValidationException('Invalid size unit.');
-        }
-
-        return $value * $units[$unit];
+        return File::parseSize($size) ?? throw new ValidationException('Invalid size.');
     }
 }

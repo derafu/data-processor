@@ -28,7 +28,6 @@ use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use Derafu\DataProcessor\RuleSet;
-use Derafu\DataProcessor\Support\Value;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -48,7 +47,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RegexRule::class)]
 #[CoversClass(NotRegexRule::class)]
 #[UsesClass(RuleSet::class)]
-#[UsesClass(Value::class)]
 final class StringValidationTest extends TestCase
 {
     private ProcessorInterface $processor;
@@ -141,6 +139,16 @@ final class StringValidationTest extends TestCase
             'invalid_regex' => [
                 'abc-123',
                 ['regex:/^[A-Z]+-\d+$/'],
+                false,
+            ],
+            'valid_regex_with_comma' => [
+                '123',
+                ['regex:/^\d{1,3}$/'],
+                true,
+            ],
+            'invalid_regex_with_comma' => [
+                '1234',
+                ['regex:/^\d{1,3}$/'],
                 false,
             ],
             'valid_not_regex' => [

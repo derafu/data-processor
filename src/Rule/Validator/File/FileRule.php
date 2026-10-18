@@ -18,7 +18,8 @@ final class FileRule extends AbstractFileRule
 {
     public function validate(mixed $value, array $parameters = []): void
     {
-        $files = $this->validateFileArray($value);
+        [$parameters, $allowEmpty] = $this->splitAllowEmpty($parameters);
+        $files = $this->validateFileArray($value, $allowEmpty);
 
         if (isset($parameters[0])) {
             $maxSize = $this->parseSize($parameters[0]);

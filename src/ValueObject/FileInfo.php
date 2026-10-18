@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\ValueObject;
 
+use Psr\Http\Message\UploadedFileInterface;
+
 /**
  * An uploaded file, whatever the shape it came in.
  *
@@ -29,14 +31,18 @@ final readonly class FileInfo
      * the file does not have one (PSR-7). An empty string when the source says
      * a path that is not a string, which is a path that does not exist.
      * @param int|null $size The size in bytes. `null` when it is not known.
-     * @param string|null $type The MIME type that the client said the file has.
-     * `null` when it has none.
+     * @param string|null $name The name that the client said the file has.
+     * `null` when it has none. It is what the client says: nothing assures that
+     * it is the real name, or that it is safe.
+     * @param UploadedFileInterface|null $upload The PSR-7 file, to read its
+     * content when it has no path on the disk. `null` when the file is not one.
      */
     public function __construct(
         public int $error,
         public ?string $path,
         public ?int $size,
-        public ?string $type,
+        public ?string $name,
+        public ?UploadedFileInterface $upload = null,
     ) {
     }
 }

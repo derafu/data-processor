@@ -15,7 +15,7 @@ namespace Derafu\DataProcessor;
 use Derafu\DataProcessor\Contract\ProcessorInterface;
 use Derafu\DataProcessor\Contract\RuleParserInterface;
 use Derafu\DataProcessor\Contract\RuleResolverInterface;
-use Derafu\DataProcessor\Support\Value;
+use Derafu\Support\Value;
 
 /**
  * Main processor that applies rules in order.
@@ -67,7 +67,7 @@ final class Processor implements ProcessorInterface
 
             // If not required rules is enabled and value is empty, skip
             // all the rules except the required rule.
-            if (!$hasRequiredRule && Value::isEmpty($value) && !$this->isRequiredRule($ruleString)) {
+            if (!$hasRequiredRule && Value::isBlank($value) && !$this->isRequiredRule($ruleString)) {
                 continue;
             }
 

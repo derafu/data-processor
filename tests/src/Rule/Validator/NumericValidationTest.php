@@ -32,7 +32,6 @@ use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use Derafu\DataProcessor\RuleSet;
-use Derafu\DataProcessor\Support\Value;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -56,7 +55,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(LessThanRule::class)]
 #[CoversClass(LessThanOrEqualRule::class)]
 #[UsesClass(RuleSet::class)]
-#[UsesClass(Value::class)]
 final class NumericValidationTest extends TestCase
 {
     private ProcessorInterface $processor;

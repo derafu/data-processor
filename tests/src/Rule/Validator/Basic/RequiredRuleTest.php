@@ -14,14 +14,11 @@ namespace Derafu\TestsDataProcessor\Rule\Validator\String;
 
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Rule\Validator\String\RequiredRule;
-use Derafu\DataProcessor\Support\Value;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(RequiredRule::class)]
-#[UsesClass(Value::class)]
 final class RequiredRuleTest extends TestCase
 {
     private RequiredRule $rule;

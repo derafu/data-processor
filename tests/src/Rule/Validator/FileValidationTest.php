@@ -13,23 +13,39 @@ declare(strict_types=1);
 namespace Derafu\TestsDataProcessor\Rule\Validator\File;
 
 use Derafu\DataProcessor\Exception\ValidationException;
+use Derafu\DataProcessor\Processor;
+use Derafu\DataProcessor\ProcessorFactory;
+use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
 use Derafu\DataProcessor\Rule\Validator\File\AbstractFileRule;
 use Derafu\DataProcessor\Rule\Validator\File\FileRule;
 use Derafu\DataProcessor\Rule\Validator\File\ImageRule;
 use Derafu\DataProcessor\Rule\Validator\File\MimeTypeRule;
+use Derafu\DataProcessor\RuleParser;
+use Derafu\DataProcessor\RuleRegistry;
+use Derafu\DataProcessor\RuleResolver;
+use Derafu\DataProcessor\RuleSet;
 use Derafu\DataProcessor\ValueObject\FileInfo;
 use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use RuntimeException;
 
 #[CoversClass(AbstractFileRule::class)]
 #[CoversClass(ImageRule::class)]
 #[CoversClass(FileRule::class)]
 #[CoversClass(MimeTypeRule::class)]
 #[UsesClass(FileInfo::class)]
+#[UsesClass(Processor::class)]
+#[UsesClass(ProcessorFactory::class)]
+#[UsesClass(DefaultRuleRegistrar::class)]
+#[UsesClass(RuleParser::class)]
+#[UsesClass(RuleRegistry::class)]
+#[UsesClass(RuleResolver::class)]
+#[UsesClass(RuleSet::class)]
 final class FileValidationTest extends TestCase
 {
     private string $tempDir;
@@ -63,19 +79,39 @@ final class FileValidationTest extends TestCase
         return $path;
     }
 
+    /**
+     * The content of a file of the fixtures: `image.jpeg`, `image.png`,
+     * `document.pdf`, `text.txt` or `data.csv`.
+     */
+    private function fixture(string $name): string
+    {
+        $content = file_get_contents(dirname(__DIR__, 2) . '/../fixtures/files/' . $name);
+        $this->assertIsString($content);
+
+        return $content;
+    }
+
+    /**
+     * Creates a temporary file with the content of a file of the fixtures.
+     */
+    private function createFixtureFile(string $fixture, ?string $name = null): string
+    {
+        return $this->createTempFile($name ?? $fixture, $this->fixture($fixture));
+    }
+
     // -------------------------------------------------------------------------
     // Tests for $_FILES simple format (single file).
     // -------------------------------------------------------------------------
 
     /**
-     * @param array{tmp_name: string, type: string, size: int, error: int} $file
+     * @param array{tmp_name: string, size?: int, error: int} $file
      * @param list<string> $rules
      */
     #[DataProvider('fileValidationProvider')]
-    public function testFileValidation(array $file, array $rules, bool $shouldPass): void
+    public function testFileValidation(string $fixture, array $file, array $rules, bool $shouldPass): void
     {
-        $tempPath = $this->createTempFile(basename($file['tmp_name']));
-        $file['tmp_name'] = $tempPath;
+        $file['name'] = basename($file['tmp_name']);
+        $file['tmp_name'] = $this->createFixtureFile($fixture, $file['name']);
 
         $rule = match($rules[0]) {
             'image' => new ImageRule(),
@@ -102,9 +138,9 @@ final class FileValidationTest extends TestCase
     {
         return [
             'valid_image' => [
+                'image.jpeg',
                 [
                     'tmp_name' => 'test.jpg',
-                    'type' => 'image/jpeg',
                     'size' => 1024 * 1024,
                     'error' => UPLOAD_ERR_OK,
                 ],
@@ -112,9 +148,9 @@ final class FileValidationTest extends TestCase
                 true,
             ],
             'invalid_image_type' => [
+                'text.txt',
                 [
                     'tmp_name' => 'test.txt',
-                    'type' => 'text/plain',
                     'size' => 1024,
                     'error' => UPLOAD_ERR_OK,
                 ],
@@ -122,9 +158,9 @@ final class FileValidationTest extends TestCase
                 false,
             ],
             'valid_file_size' => [
+                'document.pdf',
                 [
                     'tmp_name' => 'test.pdf',
-                    'type' => 'application/pdf',
                     'size' => 1024 * 1024,
                     'error' => UPLOAD_ERR_OK,
                 ],
@@ -132,9 +168,9 @@ final class FileValidationTest extends TestCase
                 true,
             ],
             'invalid_file_size' => [
+                'document.pdf',
                 [
                     'tmp_name' => 'test.pdf',
-                    'type' => 'application/pdf',
                     'size' => 3 * 1024 * 1024,
                     'error' => UPLOAD_ERR_OK,
                 ],
@@ -142,18 +178,18 @@ final class FileValidationTest extends TestCase
                 false,
             ],
             'valid_mime_type' => [
+                'document.pdf',
                 [
                     'tmp_name' => 'test.pdf',
-                    'type' => 'application/pdf',
                     'error' => UPLOAD_ERR_OK,
                 ],
                 ['mimetype', 'application/pdf', 'application/x-pdf'],
                 true,
             ],
             'invalid_mime_type' => [
+                'image.jpeg',
                 [
-                    'tmp_name' => 'test.exe',
-                    'type' => 'application/x-msdownload',
+                    'tmp_name' => 'test.pdf',
                     'error' => UPLOAD_ERR_OK,
                 ],
                 ['mimetype', 'application/pdf', 'application/x-pdf'],
@@ -292,7 +328,7 @@ final class FileValidationTest extends TestCase
     {
         // The validator itself has no concept of "optional" — an empty array
         // is currently an invalid format. Skipping for optional fields is the
-        // pipeline's responsibility (Value::isEmpty).
+        // pipeline's responsibility (Value::isBlank).
         $rule = $this->makeConcreteRule();
         $this->expectException(ValidationException::class);
         $rule->validate([]);
@@ -364,20 +400,26 @@ final class FileValidationTest extends TestCase
     // Tests for the size and the type of PSR-7 files.
     // -------------------------------------------------------------------------
 
-    private function psr7File(?int $size, ?string $type, int $error = UPLOAD_ERR_OK): UploadedFileInterface
-    {
+    private function psr7File(
+        ?int $size,
+        string $content = 'x',
+        int $error = UPLOAD_ERR_OK,
+        ?string $name = null,
+        ?StreamInterface $stream = null
+    ): UploadedFileInterface {
         $file = $this->createStub(UploadedFileInterface::class);
         $file->method('getError')->willReturn($error);
         $file->method('getSize')->willReturn($size);
-        $file->method('getClientMediaType')->willReturn($type);
+        $file->method('getClientFilename')->willReturn($name);
+        $file->method('getStream')->willReturn($stream ?? new MemoryStream($content));
 
         return $file;
     }
 
     public function testPsr7FileWithinTheMaximumSize(): void
     {
-        (new FileRule())->validate($this->psr7File(1024, 'text/plain'), ['1K']);
-        (new FileRule())->validate($this->psr7File(null, null), ['1K']);
+        (new FileRule())->validate($this->psr7File(1024), ['1Ki']);
+        (new FileRule())->validate($this->psr7File(null), ['1Ki']);
 
         $this->addToAssertionCount(2);
     }
@@ -385,26 +427,29 @@ final class FileValidationTest extends TestCase
     public function testPsr7FileLargerThanTheMaximumSize(): void
     {
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('File must not be larger than 1K.');
+        $this->expectExceptionMessage('File must not be larger than 1Ki.');
 
-        (new FileRule())->validate($this->psr7File(1025, 'text/plain'), ['1K']);
+        (new FileRule())->validate($this->psr7File(1025), ['1Ki']);
     }
 
     public function testEveryPsr7FileOfAListIsComparedWithTheMaximumSize(): void
     {
         $rule = new FileRule();
-        $rule->validate([$this->psr7File(10, 'a/b'), $this->psr7File(20, 'a/b')], ['1K']);
+        $rule->validate([$this->psr7File(10), $this->psr7File(20)], ['1Ki']);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('File must not be larger than 1K.');
+        $this->expectExceptionMessage('File must not be larger than 1Ki.');
 
-        $rule->validate([$this->psr7File(10, 'a/b'), $this->psr7File(2048, 'a/b')], ['1K']);
+        $rule->validate([$this->psr7File(10), $this->psr7File(2048)], ['1Ki']);
     }
 
     public function testPsr7ImageIsAccepted(): void
     {
-        (new ImageRule())->validate($this->psr7File(1024, 'image/png'), ['1M']);
-        (new ImageRule())->validate([$this->psr7File(1, 'image/png'), $this->psr7File(1, 'image/jpeg')]);
+        (new ImageRule())->validate($this->psr7File(1024, $this->fixture('image.png')), ['1M']);
+        (new ImageRule())->validate([
+            $this->psr7File(1, $this->fixture('image.png')),
+            $this->psr7File(1, $this->fixture('image.jpeg')),
+        ]);
 
         $this->addToAssertionCount(2);
     }
@@ -414,33 +459,94 @@ final class FileValidationTest extends TestCase
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('File must be an image.');
 
-        (new ImageRule())->validate($this->psr7File(1024, 'application/pdf'));
+        (new ImageRule())->validate($this->psr7File(1024, $this->fixture('document.pdf')));
     }
 
     public function testPsr7ImageLargerThanTheMaximumSizeIsRejected(): void
     {
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Image must not be larger than 1K.');
+        $this->expectExceptionMessage('Image must not be larger than 1Ki.');
 
-        (new ImageRule())->validate($this->psr7File(2048, 'image/png'), ['1K']);
+        (new ImageRule())->validate($this->psr7File(2048, $this->fixture('image.png')), ['1Ki']);
     }
 
-    public function testPsr7FileWithoutTypeIsRejectedByTheRulesOfType(): void
+    public function testPsr7FileWithAStreamThatCannotBeReadHasNoType(): void
     {
-        foreach ([new ImageRule(), new MimeTypeRule()] as $rule) {
+        $withoutStream = $this->createStub(UploadedFileInterface::class);
+        $withoutStream->method('getError')->willReturn(UPLOAD_ERR_OK);
+        $withoutStream->method('getSize')->willReturn(1);
+        $withoutStream->method('getStream')->willThrowException(new RuntimeException('There is no stream.'));
+
+        $files = [
+            'a stream that does not exist' => $withoutStream,
+            'a stream that cannot be moved' => $this->psr7File(1, $this->fixture('image.png'), stream: new MemoryStream($this->fixture('image.png'), seekable: false)),
+            'a stream that fails when it is moved' => $this->psr7File(1, $this->fixture('image.png'), stream: new MemoryStream($this->fixture('image.png'), failsOnRewind: true)),
+        ];
+
+        foreach ($files as $case => $file) {
             try {
-                $rule->validate($this->psr7File(1, null), ['image/png']);
-                $this->fail('A file without type must be rejected.');
+                (new ImageRule())->validate($file);
+                $this->fail('The image of ' . $case . ' must be rejected.');
             } catch (ValidationException $e) {
-                $this->assertSame('File array must contain type.', $e->getMessage());
+                $this->assertSame('File must be an image.', $e->getMessage(), $case);
+            }
+
+            try {
+                (new MimeTypeRule())->validate($file, ['image/png']);
+                $this->fail('The type of ' . $case . ' must not be determined.');
+            } catch (ValidationException $e) {
+                $this->assertSame('File type could not be determined.', $e->getMessage(), $case);
             }
         }
     }
 
+    public function testPsr7StreamIsLeftWhereItWasAfterBeingRead(): void
+    {
+        $stream = new MemoryStream($this->fixture('image.png'));
+        $stream->seek(7);
+
+        (new ImageRule())->validate($this->psr7File(1, stream: $stream));
+        (new MimeTypeRule())->validate($this->psr7File(1, stream: $stream), ['image/png']);
+
+        $this->assertSame(7, $stream->tell());
+    }
+
+    public function testPsr7StreamThatGivesLessThanWhatIsAskedIsReadUntilTheEnd(): void
+    {
+        $stream = new MemoryStream($this->fixture('image.png'), chunk: 8);
+
+        (new ImageRule())->validate($this->psr7File(1, stream: $stream));
+        (new MimeTypeRule())->validate($this->psr7File(1, stream: $stream), ['image/png']);
+
+        $this->addToAssertionCount(2);
+    }
+
+    public function testPsr7StreamThatStopsGivingContentIsTakenAsItIs(): void
+    {
+        $stream = new MemoryStream($this->fixture('image.png'), stalls: true);
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File must be an image.');
+
+        (new ImageRule())->validate($this->psr7File(1, stream: $stream));
+    }
+
+    public function testOnlyTheStartOfAPsr7StreamIsRead(): void
+    {
+        $stream = new MemoryStream($this->fixture('image.png') . str_repeat("\0", 2 * 1024 * 1024));
+
+        (new MimeTypeRule())->validate($this->psr7File(1, stream: $stream), ['image/png']);
+
+        $this->assertSame(0, $stream->tell());
+    }
+
     public function testPsr7FileOfAllowedMimeType(): void
     {
-        (new MimeTypeRule())->validate($this->psr7File(1, 'application/pdf'), ['application/pdf', 'text/plain']);
-        (new MimeTypeRule())->validate([$this->psr7File(1, 'text/plain'), $this->psr7File(1, 'application/pdf')], ['application/pdf', 'text/plain']);
+        (new MimeTypeRule())->validate($this->psr7File(1, $this->fixture('document.pdf')), ['application/pdf', 'text/plain']);
+        (new MimeTypeRule())->validate([
+            $this->psr7File(1, $this->fixture('text.txt')),
+            $this->psr7File(1, $this->fixture('document.pdf')),
+        ], ['application/pdf', 'text/plain']);
 
         $this->addToAssertionCount(2);
     }
@@ -450,7 +556,7 @@ final class FileValidationTest extends TestCase
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Invalid file type image/png. Allowed types: application/pdf, text/plain.');
 
-        (new MimeTypeRule())->validate($this->psr7File(1, 'image/png'), ['application/pdf', 'text/plain']);
+        (new MimeTypeRule())->validate($this->psr7File(1, $this->fixture('image.png')), ['application/pdf', 'text/plain']);
     }
 
     public function testTheTypeRulesNeedTheAllowedTypesWhenTheFileIsPsr7(): void
@@ -458,7 +564,19 @@ final class FileValidationTest extends TestCase
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Allowed MIME types must be specified.');
 
-        (new MimeTypeRule())->validate($this->psr7File(1, 'image/png'));
+        (new MimeTypeRule())->validate($this->psr7File(1, $this->fixture('image.png')));
+    }
+
+    public function testPsr7TextIsAllowedByTheExtensionOfItsClientFilename(): void
+    {
+        $content = $this->fixture('data.csv');
+
+        (new MimeTypeRule())->validate($this->psr7File(1, $content, name: 'data.csv'), ['text/csv']);
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type text/plain. Allowed types: text/csv.');
+
+        (new MimeTypeRule())->validate($this->psr7File(1, $content, name: 'data.txt'), ['text/csv']);
     }
 
     public function testNativeMultipleFilesWithAnUploadErrorThatIsNotAnArray(): void
@@ -477,5 +595,431 @@ final class FileValidationTest extends TestCase
         $this->expectExceptionMessage('File at index 0 does not exist.');
 
         (new FileRule())->validate(['tmp_name' => [123], 'error' => [UPLOAD_ERR_OK]]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Tests for the empty files and the option allow_empty.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @return array{tmp_name: string, size: int, error: int}
+     */
+    private function emptyFile(): array
+    {
+        return [
+            'tmp_name' => $this->createTempFile('empty.txt', ''),
+            'size' => 0,
+            'error' => UPLOAD_ERR_OK,
+        ];
+    }
+
+    public function testEmptyFileIsRejectedByEveryFileRule(): void
+    {
+        $rules = [
+            [new FileRule(), []],
+            [new ImageRule(), []],
+            [new MimeTypeRule(), ['image/png']],
+        ];
+
+        foreach ($rules as [$rule, $parameters]) {
+            try {
+                $rule->validate($this->emptyFile(), $parameters);
+                $this->fail('An empty file must be rejected.');
+            } catch (ValidationException $e) {
+                $this->assertSame('File is empty.', $e->getMessage());
+            }
+        }
+    }
+
+    public function testEmptyFileIsAcceptedWithTheOptionAllowEmpty(): void
+    {
+        (new FileRule())->validate($this->emptyFile(), ['allow_empty']);
+        (new ImageRule())->validate($this->emptyFile(), ['allow_empty']);
+        (new MimeTypeRule())->validate($this->emptyFile(), ['image/png', 'allow_empty']);
+
+        $this->addToAssertionCount(3);
+    }
+
+    public function testAnEmptyFileThatIsAllowedDoesNotExemptTheOthersOfTheListFromTheirType(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File must be an image.');
+
+        (new ImageRule())->validate([
+            $this->emptyFile(),
+            ['tmp_name' => $this->createFixtureFile('text.txt'), 'error' => UPLOAD_ERR_OK, 'size' => 17],
+        ], ['allow_empty']);
+    }
+
+    public function testTheOptionAllowEmptyDoesNotMoveTheOtherParameters(): void
+    {
+        $rule = new FileRule();
+        $rule->validate($this->emptyFile(), ['allow_empty', '1Ki']);
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File must not be larger than 1Ki.');
+
+        $file = $this->emptyFile();
+        $file['size'] = 2048;
+        $rule->validate($file, ['allow_empty', '1Ki']);
+    }
+
+    public function testTheOptionAllowEmptyIsNotAnAllowedMimeType(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type text/plain. Allowed types: image/png.');
+
+        (new MimeTypeRule())->validate(
+            ['tmp_name' => $this->createFixtureFile('text.txt'), 'error' => UPLOAD_ERR_OK, 'size' => 17],
+            ['allow_empty', 'image/png']
+        );
+    }
+
+    public function testEmptyFileOfAListIsRejectedWithItsIndex(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File at index 1 is empty.');
+
+        (new FileRule())->validate([
+            ['tmp_name' => $this->createTempFile('full.txt'), 'error' => UPLOAD_ERR_OK, 'size' => 1],
+            $this->emptyFile(),
+        ]);
+    }
+
+    public function testEmptyFileOfANativeMultipleIsRejectedWithItsIndex(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File at index 1 is empty.');
+
+        (new FileRule())->validate([
+            'tmp_name' => [$this->createTempFile('full.txt'), $this->createTempFile('empty.txt', '')],
+            'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK],
+            'size' => [1, 0],
+        ]);
+    }
+
+    public function testListWithEmptyFilesIsAcceptedWithTheOptionAllowEmpty(): void
+    {
+        (new FileRule())->validate([$this->emptyFile(), $this->emptyFile()], ['allow_empty']);
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testEmptyPsr7FileIsRejected(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File is empty.');
+
+        (new FileRule())->validate($this->psr7File(0));
+    }
+
+    public function testFileThatDoesNotSayItsSizeIsNotRejectedAsEmpty(): void
+    {
+        (new FileRule())->validate($this->psr7File(null));
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testUploadErrorIsReportedBeforeTheFileBeingEmpty(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File has upload error.');
+
+        (new FileRule())->validate($this->psr7File(0, error: UPLOAD_ERR_PARTIAL));
+    }
+
+    // -------------------------------------------------------------------------
+    // Tests for the files normalized in a list.
+    // -------------------------------------------------------------------------
+
+    public function testEveryFileOfANativeMultipleIsComparedWithTheMaximumSize(): void
+    {
+        $rule = new FileRule();
+        $paths = [$this->createTempFile('a.txt'), $this->createTempFile('b.txt')];
+
+        $rule->validate(['tmp_name' => $paths, 'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK], 'size' => [10, 20]], ['1Ki']);
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File must not be larger than 1Ki.');
+
+        $rule->validate(['tmp_name' => $paths, 'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK], 'size' => [10, 2048]], ['1Ki']);
+    }
+
+    public function testEveryFileOfANativeMultipleIsCheckedAgainstTheAllowedTypes(): void
+    {
+        $files = [
+            'tmp_name' => [$this->createFixtureFile('image.png'), $this->createFixtureFile('document.pdf')],
+            'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK],
+        ];
+
+        (new MimeTypeRule())->validate($files, ['image/png', 'application/pdf']);
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type application/pdf. Allowed types: image/png.');
+
+        (new MimeTypeRule())->validate($files, ['image/png']);
+    }
+
+    public function testEveryFileOfANativeMultipleMustBeAnImage(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File must be an image.');
+
+        (new ImageRule())->validate([
+            'tmp_name' => [$this->createFixtureFile('image.png'), $this->createFixtureFile('document.pdf')],
+            'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK],
+        ]);
+    }
+
+    public function testEveryFileOfANativeMultipleUsesItsOwnName(): void
+    {
+        $files = [
+            'tmp_name' => [$this->createFixtureFile('data.csv', 'a.tmp'), $this->createFixtureFile('data.csv', 'b.tmp')],
+            'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK],
+            'name' => ['a.csv', 'b.csv'],
+        ];
+
+        (new MimeTypeRule())->validate($files, ['text/csv']);
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type text/plain. Allowed types: text/csv.');
+
+        $files['name'] = ['a.csv', 'b.txt'];
+        (new MimeTypeRule())->validate($files, ['text/csv']);
+    }
+
+    public function testTheMessageOfAListHasTheIndexOfTheFileThatFailed(): void
+    {
+        $ok = ['tmp_name' => $this->createTempFile('ok.txt'), 'error' => UPLOAD_ERR_OK];
+        $rule = new FileRule();
+
+        $cases = [
+            'File at index 1 has upload error.' => [$ok, ['tmp_name' => '/tmp/x.tmp', 'error' => UPLOAD_ERR_PARTIAL]],
+            'File at index 1 does not exist.' => [$ok, ['tmp_name' => '/tmp/nope_' . uniqid(), 'error' => UPLOAD_ERR_OK]],
+            'File at index 2 has upload error.' => [$ok, $ok, ['tmp_name' => '/tmp/x.tmp', 'error' => UPLOAD_ERR_PARTIAL]],
+        ];
+
+        foreach ($cases as $message => $files) {
+            try {
+                $rule->validate($files);
+                $this->fail('A list with a file that is not valid must be rejected.');
+            } catch (ValidationException $e) {
+                $this->assertSame($message, $e->getMessage());
+            }
+        }
+    }
+
+    public function testTheMessageOfAListKeepsTheKeyThatTheFileHadInTheValue(): void
+    {
+        $ok = ['tmp_name' => $this->createTempFile('ok.txt'), 'error' => UPLOAD_ERR_OK];
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File at index second has upload error.');
+
+        (new FileRule())->validate([
+            $ok,
+            'second' => ['tmp_name' => '/tmp/x.tmp', 'error' => UPLOAD_ERR_PARTIAL],
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Tests for the rule mimetype through the processor.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @return array{tmp_name: string, name: string, size: int, error: int}
+     */
+    private function fileOfFixture(string $fixture): array
+    {
+        return [
+            'tmp_name' => $this->createFixtureFile($fixture, 'upload.tmp'),
+            'name' => $fixture,
+            'size' => 1,
+            'error' => UPLOAD_ERR_OK,
+        ];
+    }
+
+    public function testMimetypeWithSeveralTypesThroughTheProcessor(): void
+    {
+        $processor = ProcessorFactory::create();
+        $file = $this->fileOfFixture('image.jpeg');
+
+        $result = $processor->process($file, ['validate' => ['mimetype:image/png,image/jpeg']]);
+
+        $this->assertSame($file, $result);
+    }
+
+    public function testMimetypeWithSeveralTypesRejectsAnotherTypeThroughTheProcessor(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type application/pdf. Allowed types: image/png, image/jpeg.');
+
+        ProcessorFactory::create()->process(
+            $this->fileOfFixture('document.pdf'),
+            ['validate' => ['mimetype:image/png,image/jpeg']]
+        );
+    }
+
+    public function testMimetypeOfTextByTheExtensionThroughTheProcessor(): void
+    {
+        $file = $this->fileOfFixture('data.csv');
+
+        $result = ProcessorFactory::create()->process($file, ['validate' => ['mimetype:text/csv']]);
+
+        $this->assertSame($file, $result);
+    }
+
+    // -------------------------------------------------------------------------
+    // Tests for the type that is detected by the content.
+    // -------------------------------------------------------------------------
+
+    public function testTheTypeThatTheClientSaysIsNotUsed(): void
+    {
+        $text = ['tmp_name' => $this->createFixtureFile('text.txt'), 'type' => 'image/png', 'error' => UPLOAD_ERR_OK];
+
+        try {
+            (new ImageRule())->validate($text);
+            $this->fail('A text that says to be an image must be rejected.');
+        } catch (ValidationException $e) {
+            $this->assertSame('File must be an image.', $e->getMessage());
+        }
+
+        try {
+            (new MimeTypeRule())->validate($text, ['image/png']);
+            $this->fail('A text that says to be a PNG must be rejected.');
+        } catch (ValidationException $e) {
+            $this->assertSame('Invalid file type text/plain. Allowed types: image/png.', $e->getMessage());
+        }
+
+        $png = ['tmp_name' => $this->createFixtureFile('image.png', 'a.tmp'), 'type' => 'text/plain', 'error' => UPLOAD_ERR_OK];
+        (new ImageRule())->validate($png);
+        (new MimeTypeRule())->validate($png, ['image/png']);
+
+        $this->addToAssertionCount(2);
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function imageFormatProvider(): array
+    {
+        return [
+            'jpeg' => ['image.jpeg', ''],
+            'png' => ['image.png', ''],
+            'gif' => ['', 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'],
+            'webp' => ['', 'UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA=='],
+        ];
+    }
+
+    #[DataProvider('imageFormatProvider')]
+    public function testTheFormatsOfImageThatAreAllowed(string $fixture, string $base64): void
+    {
+        $content = $fixture !== '' ? $this->fixture($fixture) : (string) base64_decode($base64);
+
+        (new ImageRule())->validate(['tmp_name' => $this->createTempFile('image.bin', $content), 'error' => UPLOAD_ERR_OK]);
+        (new ImageRule())->validate($this->psr7File(strlen($content), $content));
+
+        $this->addToAssertionCount(2);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function notAnImageProvider(): array
+    {
+        return [
+            'a pdf' => ['%PDF-1.4'],
+            'a text' => ['hello'],
+            'a text that is too short to be an image' => ['a'],
+            'binary content' => ["\x00\x01\x02\x03\xff\xfe\xfd\xfc"],
+            'an svg' => ['<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>'],
+        ];
+    }
+
+    #[DataProvider('notAnImageProvider')]
+    public function testWhatIsNotAnImageIsRejectedWhateverItsNameAndTypeSay(string $content): void
+    {
+        $file = [
+            'tmp_name' => $this->createTempFile('image.png', $content),
+            'name' => 'image.png',
+            'type' => 'image/png',
+            'size' => strlen($content),
+            'error' => UPLOAD_ERR_OK,
+        ];
+
+        try {
+            (new ImageRule())->validate($file);
+            $this->fail('What is not an image must be rejected.');
+        } catch (ValidationException $e) {
+            $this->assertSame('File must be an image.', $e->getMessage());
+        }
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File must be an image.');
+
+        (new ImageRule())->validate($this->psr7File(strlen($content), $content, name: 'image.png'));
+    }
+
+    public function testAllowedTypesDoNotDependOnCaseOrSpaces(): void
+    {
+        (new MimeTypeRule())->validate(
+            ['tmp_name' => $this->createFixtureFile('image.png'), 'error' => UPLOAD_ERR_OK],
+            [' Image/PNG ']
+        );
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testTextIsAllowedByTheExtensionOfItsName(): void
+    {
+        foreach (['data.csv', 'DATA.CSV', 'archive.tar.csv'] as $name) {
+            (new MimeTypeRule())->validate(
+                ['tmp_name' => $this->createFixtureFile('data.csv', 'upload.tmp'), 'name' => $name, 'error' => UPLOAD_ERR_OK],
+                ['text/csv']
+            );
+        }
+
+        $this->addToAssertionCount(3);
+    }
+
+    public function testTextIsRejectedWhenTheExtensionOfItsNameIsNotOneOfAnAllowedType(): void
+    {
+        $names = ['data.txt' => 'data.txt', 'without extension' => 'data', 'no name' => null];
+
+        foreach ($names as $case => $name) {
+            $file = ['tmp_name' => $this->createFixtureFile('data.csv', 'upload.tmp'), 'error' => UPLOAD_ERR_OK];
+            if ($name !== null) {
+                $file['name'] = $name;
+            }
+
+            try {
+                (new MimeTypeRule())->validate($file, ['text/csv']);
+                $this->fail('The text of "' . $case . '" must be rejected.');
+            } catch (ValidationException $e) {
+                $this->assertSame('Invalid file type text/plain. Allowed types: text/csv.', $e->getMessage(), $case);
+            }
+        }
+    }
+
+    public function testTheExtensionOfAnAllowedTypeThatIsNotTextDoesNotAllowText(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type text/plain. Allowed types: application/pdf.');
+
+        (new MimeTypeRule())->validate(
+            ['tmp_name' => $this->createFixtureFile('text.txt'), 'name' => 'document.pdf', 'error' => UPLOAD_ERR_OK],
+            ['application/pdf']
+        );
+    }
+
+    public function testTheExtensionOfATypeOfTextDoesNotAllowAnotherKindOfContent(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type image/png. Allowed types: text/csv.');
+
+        (new MimeTypeRule())->validate(
+            ['tmp_name' => $this->createFixtureFile('image.png'), 'name' => 'data.csv', 'error' => UPLOAD_ERR_OK],
+            ['text/csv']
+        );
     }
 }
