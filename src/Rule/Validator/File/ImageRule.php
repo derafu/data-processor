@@ -34,30 +34,25 @@ final class ImageRule extends AbstractFileRule
 
     public function validate(mixed $value, array $parameters = []): void
     {
-        [$parameters, $allowEmpty] = $this->splitAllowEmpty($parameters);
-        $files = $this->validateFileArray($value, $allowEmpty);
+        $limits = $this->sizeLimitsOf($parameters);
+        $files = $this->validateFileArray($value, $limits['min'], $limits['minText']);
 
         foreach ($files as $file) {
-            // An empty file that is allowed has no content to be read as an
-            // image.
-            if ($allowEmpty && $file->size === 0) {
+            // An empty file that has passed the minimum size is allowed, and
+            // it has no content to be read as an image.
+            if ($file->size === 0) {
                 continue;
             }
 
             if (!in_array($this->imageTypeOf($file), self::ALLOWED_TYPES, true)) {
                 throw new ValidationException('File must be an image.');
             }
-        }
 
-        if (isset($parameters[0])) {
-            $maxSize = $this->parseSize($parameters[0]);
-            foreach ($files as $file) {
-                if ($file->size !== null && $file->size > $maxSize) {
-                    throw new ValidationException([
-                        'Image must not be larger than {max}.',
-                        'max' => $parameters[0],
-                    ]);
-                }
+            if ($limits['max'] !== null && $file->size !== null && $file->size > $limits['max']) {
+                throw new ValidationException([
+                    'Image size must not be larger than {max}.',
+                    'max' => $limits['maxText'],
+                ]);
             }
         }
     }

@@ -18,16 +18,15 @@ final class FileRule extends AbstractFileRule
 {
     public function validate(mixed $value, array $parameters = []): void
     {
-        [$parameters, $allowEmpty] = $this->splitAllowEmpty($parameters);
-        $files = $this->validateFileArray($value, $allowEmpty);
+        $limits = $this->sizeLimitsOf($parameters);
+        $files = $this->validateFileArray($value, $limits['min'], $limits['minText']);
 
-        if (isset($parameters[0])) {
-            $maxSize = $this->parseSize($parameters[0]);
+        if ($limits['max'] !== null) {
             foreach ($files as $file) {
-                if ($file->size !== null && $file->size > $maxSize) {
+                if ($file->size !== null && $file->size > $limits['max']) {
                     throw new ValidationException([
-                        'File must not be larger than {max}.',
-                        'max' => $parameters[0],
+                        'File size must not be larger than {max}.',
+                        'max' => $limits['maxText'],
                     ]);
                 }
             }

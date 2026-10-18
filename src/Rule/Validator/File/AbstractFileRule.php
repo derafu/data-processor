@@ -22,33 +22,78 @@ use RuntimeException;
 abstract class AbstractFileRule implements ValidatorRuleInterface
 {
     /**
-     * Option of the rules, as a parameter: the files can be empty (0 bytes).
-     */
-    private const ALLOW_EMPTY = 'allow_empty';
-
-    /**
      * Bytes of the start of a file that are read to know its type. It is the
      * most that `libmagic` reads.
      */
     private const START_BYTES = 1048576;
 
     /**
-     * Separates the option `allow_empty` from the parameters of the rule.
+     * Reads the size limits that a rule has as parameters.
      *
-     * The option can be in any position, so the other parameters keep theirs.
+     * The parameters are `max_size=<size>` and `min_size=<size>`, in any order.
+     * A parameter that is only a size, as `2M`, is the maximum size: it is the
+     * short form of `max_size=2M`. The sizes are read as `File::parseSize()`
+     * does (`2048`, `2M`, `1.5Mi`).
+     *
+     * The minimum size is 1 byte unless `min_size` is given, so a file that is
+     * empty is not valid: `min_size=0` allows it.
      *
      * @param list<string> $parameters The parameters of the rule.
-     * @return array{list<string>, bool} The parameters without the option, and
-     * whether the option was there.
+     * @return array{min: int, minText: string, max: int|null, maxText: string|null}
+     * The limits in bytes, with the text to show of each one in a message.
+     * The maximum is `null` if there is none.
+     * @throws ValidationException If a parameter is not valid, is repeated, or
+     * the minimum size is larger than the maximum size.
      */
-    protected function splitAllowEmpty(array $parameters): array
+    protected function sizeLimitsOf(array $parameters): array
     {
-        $rest = array_values(array_filter(
-            $parameters,
-            static fn (string $parameter): bool => $parameter !== self::ALLOW_EMPTY
-        ));
+        $texts = ['min_size' => null, 'max_size' => null];
+        foreach ($parameters as $parameter) {
+            [$name, $text] = str_contains($parameter, '=')
+                ? explode('=', $parameter, 2)
+                : ['max_size', $parameter];
 
-        return [$rest, count($rest) !== count($parameters)];
+            if (!array_key_exists($name, $texts) || $texts[$name] !== null) {
+                throw new ValidationException([
+                    'Invalid parameter: {parameter}',
+                    'parameter' => $parameter,
+                ]);
+            }
+
+            $texts[$name] = $text;
+        }
+
+        $max = $texts['max_size'] !== null ? $this->parseSize($texts['max_size']) : null;
+        $min = $texts['min_size'] !== null ? $this->parseSize($texts['min_size']) : 1;
+
+        if ($texts['min_size'] !== null && $max !== null && $min > $max) {
+            throw new ValidationException('Minimum size must not be larger than the maximum size.');
+        }
+
+        return [
+            'min' => $min,
+            'minText' => $this->sizeText($texts['min_size'] ?? '1'),
+            'max' => $max,
+            'maxText' => $texts['max_size'] !== null ? $this->sizeText($texts['max_size']) : null,
+        ];
+    }
+
+    /**
+     * Writes a size as it is shown in a message.
+     *
+     * A size with a unit (`2M`) is shown as it was written. A number of bytes
+     * has no unit, so it gets one: `2048 bytes`.
+     *
+     * @param string $size The size, as it was written in the parameters.
+     * @return string The size to show.
+     */
+    private function sizeText(string $size): string
+    {
+        if (!ctype_digit($size)) {
+            return $size;
+        }
+
+        return $size === '1' ? '1 byte' : $size . ' bytes';
     }
 
     /**
@@ -56,28 +101,29 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
      * returns the files.
      *
      * Each file must have no upload error, be on the disk if it has a path
-     * there, and not be empty (0 bytes) unless it is allowed. A file that does
-     * not say its size is not rejected as empty.
+     * there, and not be smaller than the minimum size. A file that does not say
+     * its size is not rejected for it.
      *
      * @param mixed $value The value to validate: a file, or a list of them. See
      * `fileFrom()` and `filesFrom()` for the shapes that they can have.
-     * @param bool $allowEmpty Whether the files can be empty.
+     * @param int $minSize The minimum size of each file, in bytes.
+     * @param string $minText The minimum size as it is written, to report it.
      * @return list<FileInfo> The files of the value, in order.
      * @throws ValidationException If the value is not an uploaded file, or a
      * list of them, or one of its files is not valid.
      */
-    protected function validateFileArray(mixed $value, bool $allowEmpty = false): array
+    protected function validateFileArray(mixed $value, int $minSize = 0, string $minText = '0'): array
     {
         $file = $this->fileFrom($value);
         if ($file !== null) {
-            $this->checkFile($file, null, $allowEmpty);
+            $this->checkFile($file, null, $minSize, $minText);
 
             return [$file];
         }
 
         $files = $this->filesFrom($value);
         foreach ($files as $index => $file) {
-            $this->checkFile($file, $index, $allowEmpty);
+            $this->checkFile($file, $index, $minSize, $minText);
         }
 
         return array_values($files);
@@ -85,15 +131,16 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
 
     /**
      * Checks that a file has no upload error, that it is on the disk if it has
-     * a path there, and that it is not empty unless it is allowed.
+     * a path there, and that it is not smaller than the minimum size.
      *
      * @param FileInfo $file The file.
      * @param int|string|null $index The position or key of the file in the list
      * it came in, `null` if it did not come in a list.
-     * @param bool $allowEmpty Whether the file can be empty.
+     * @param int $minSize The minimum size, in bytes.
+     * @param string $minText The minimum size as it is written, to report it.
      * @throws ValidationException If the file is not valid.
      */
-    private function checkFile(FileInfo $file, int|string|null $index, bool $allowEmpty): void
+    private function checkFile(FileInfo $file, int|string|null $index, int $minSize, string $minText): void
     {
         if ($file->error !== UPLOAD_ERR_OK) {
             throw $index === null
@@ -107,11 +154,20 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
                 : new ValidationException(['File at index {index} does not exist.', 'index' => $index]);
         }
 
-        if (!$allowEmpty && $file->size === 0) {
+        if ($file->size === null || $file->size >= $minSize) {
+            return;
+        }
+
+        if ($file->size === 0) {
             throw $index === null
                 ? new ValidationException('File is empty.')
                 : new ValidationException(['File at index {index} is empty.', 'index' => $index]);
         }
+
+        throw new ValidationException([
+            'File size must not be smaller than {min}.',
+            'min' => $minText,
+        ]);
     }
 
     /**
@@ -280,7 +336,7 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
     }
 
     /**
-     * Reads the maximum size that a rule has as a parameter.
+     * Reads a size that a rule has as a parameter.
      *
      * @param string $size The size, as `File::parseSize()` reads it (`2048`,
      * `2M`, `1.5Mi`).

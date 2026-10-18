@@ -427,7 +427,7 @@ final class FileValidationTest extends TestCase
     public function testPsr7FileLargerThanTheMaximumSize(): void
     {
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('File must not be larger than 1Ki.');
+        $this->expectExceptionMessage('File size must not be larger than 1Ki.');
 
         (new FileRule())->validate($this->psr7File(1025), ['1Ki']);
     }
@@ -438,7 +438,7 @@ final class FileValidationTest extends TestCase
         $rule->validate([$this->psr7File(10), $this->psr7File(20)], ['1Ki']);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('File must not be larger than 1Ki.');
+        $this->expectExceptionMessage('File size must not be larger than 1Ki.');
 
         $rule->validate([$this->psr7File(10), $this->psr7File(2048)], ['1Ki']);
     }
@@ -465,7 +465,7 @@ final class FileValidationTest extends TestCase
     public function testPsr7ImageLargerThanTheMaximumSizeIsRejected(): void
     {
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Image must not be larger than 1Ki.');
+        $this->expectExceptionMessage('Image size must not be larger than 1Ki.');
 
         (new ImageRule())->validate($this->psr7File(2048, $this->fixture('image.png')), ['1Ki']);
     }
@@ -598,7 +598,7 @@ final class FileValidationTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // Tests for the empty files and the option allow_empty.
+    // Tests for the empty files and the size limits.
     // -------------------------------------------------------------------------
 
     /**
@@ -613,17 +613,11 @@ final class FileValidationTest extends TestCase
         ];
     }
 
-    public function testEmptyFileIsRejectedByEveryFileRule(): void
+    public function testEmptyFileIsRejectedByDefaultByTheSizeRules(): void
     {
-        $rules = [
-            [new FileRule(), []],
-            [new ImageRule(), []],
-            [new MimeTypeRule(), ['image/png']],
-        ];
-
-        foreach ($rules as [$rule, $parameters]) {
+        foreach ([new FileRule(), new ImageRule()] as $rule) {
             try {
-                $rule->validate($this->emptyFile(), $parameters);
+                $rule->validate($this->emptyFile());
                 $this->fail('An empty file must be rejected.');
             } catch (ValidationException $e) {
                 $this->assertSame('File is empty.', $e->getMessage());
@@ -631,13 +625,27 @@ final class FileValidationTest extends TestCase
         }
     }
 
-    public function testEmptyFileIsAcceptedWithTheOptionAllowEmpty(): void
+    public function testEmptyFileIsRejectedByItsTypeByTheMimeTypeRule(): void
     {
-        (new FileRule())->validate($this->emptyFile(), ['allow_empty']);
-        (new ImageRule())->validate($this->emptyFile(), ['allow_empty']);
-        (new MimeTypeRule())->validate($this->emptyFile(), ['image/png', 'allow_empty']);
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type application/x-empty. Allowed types: image/png.');
 
-        $this->addToAssertionCount(3);
+        (new MimeTypeRule())->validate($this->emptyFile(), ['image/png']);
+    }
+
+    public function testEmptyFileIsAcceptedWithAMinimumSizeOfZero(): void
+    {
+        (new FileRule())->validate($this->emptyFile(), ['min_size=0']);
+        (new ImageRule())->validate($this->emptyFile(), ['min_size=0']);
+
+        $this->addToAssertionCount(2);
+    }
+
+    public function testEmptyFileIsAcceptedByTheMimeTypeRuleIfItsTypeIsAllowed(): void
+    {
+        (new MimeTypeRule())->validate($this->emptyFile(), ['image/png', 'application/x-empty']);
+
+        $this->addToAssertionCount(1);
     }
 
     public function testAnEmptyFileThatIsAllowedDoesNotExemptTheOthersOfTheListFromTheirType(): void
@@ -648,31 +656,20 @@ final class FileValidationTest extends TestCase
         (new ImageRule())->validate([
             $this->emptyFile(),
             ['tmp_name' => $this->createFixtureFile('text.txt'), 'error' => UPLOAD_ERR_OK, 'size' => 17],
-        ], ['allow_empty']);
+        ], ['min_size=0']);
     }
 
-    public function testTheOptionAllowEmptyDoesNotMoveTheOtherParameters(): void
+    public function testAMinimumSizeOfZeroDoesNotMoveTheMaximumSize(): void
     {
         $rule = new FileRule();
-        $rule->validate($this->emptyFile(), ['allow_empty', '1Ki']);
+        $rule->validate($this->emptyFile(), ['1Ki', 'min_size=0']);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('File must not be larger than 1Ki.');
+        $this->expectExceptionMessage('File size must not be larger than 1Ki.');
 
         $file = $this->emptyFile();
         $file['size'] = 2048;
-        $rule->validate($file, ['allow_empty', '1Ki']);
-    }
-
-    public function testTheOptionAllowEmptyIsNotAnAllowedMimeType(): void
-    {
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Invalid file type text/plain. Allowed types: image/png.');
-
-        (new MimeTypeRule())->validate(
-            ['tmp_name' => $this->createFixtureFile('text.txt'), 'error' => UPLOAD_ERR_OK, 'size' => 17],
-            ['allow_empty', 'image/png']
-        );
+        $rule->validate($file, ['min_size=0', '1Ki']);
     }
 
     public function testEmptyFileOfAListIsRejectedWithItsIndex(): void
@@ -698,9 +695,9 @@ final class FileValidationTest extends TestCase
         ]);
     }
 
-    public function testListWithEmptyFilesIsAcceptedWithTheOptionAllowEmpty(): void
+    public function testListWithEmptyFilesIsAcceptedWithAMinimumSizeOfZero(): void
     {
-        (new FileRule())->validate([$this->emptyFile(), $this->emptyFile()], ['allow_empty']);
+        (new FileRule())->validate([$this->emptyFile(), $this->emptyFile()], ['min_size=0']);
 
         $this->addToAssertionCount(1);
     }
@@ -711,6 +708,16 @@ final class FileValidationTest extends TestCase
         $this->expectExceptionMessage('File is empty.');
 
         (new FileRule())->validate($this->psr7File(0));
+    }
+
+    public function testEmptyPsr7FileIsAcceptedByTheMimeTypeRuleIfItsTypeIsAllowed(): void
+    {
+        (new MimeTypeRule())->validate($this->psr7File(0, ''), ['image/png', 'application/x-empty']);
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type application/x-empty. Allowed types: image/png.');
+
+        (new MimeTypeRule())->validate($this->psr7File(0, ''), ['image/png']);
     }
 
     public function testFileThatDoesNotSayItsSizeIsNotRejectedAsEmpty(): void
@@ -729,6 +736,140 @@ final class FileValidationTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // Tests for the minimum and the maximum size.
+    // -------------------------------------------------------------------------
+
+    public function testMaximumSizeAsANamedParameterIsTheSameAsThePositionalOne(): void
+    {
+        foreach ([new FileRule(), new ImageRule()] as $rule) {
+            $content = $this->fixture('image.png');
+            $rule->validate($this->psr7File(1024, $content), ['max_size=1Ki']);
+
+            try {
+                $rule->validate($this->psr7File(2048, $content), ['max_size=1Ki']);
+                $this->fail('A file larger than the maximum size must be rejected.');
+            } catch (ValidationException $e) {
+                $this->assertStringEndsWith('size must not be larger than 1Ki.', $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * @param list<string> $parameters
+     */
+    #[DataProvider('sizesWithoutUnitProvider')]
+    public function testASizeWithoutUnitIsShownInBytes(int $size, array $parameters, string $message): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage($message);
+
+        (new FileRule())->validate($this->psr7File($size), $parameters);
+    }
+
+    /**
+     * @return array<string, array{int, list<string>, string}>
+     */
+    public static function sizesWithoutUnitProvider(): array
+    {
+        return [
+            'maximum' => [3000, ['2048'], 'File size must not be larger than 2048 bytes.'],
+            'maximum of one' => [2, ['max_size=1'], 'File size must not be larger than 1 byte.'],
+            'minimum' => [50, ['min_size=100'], 'File size must not be smaller than 100 bytes.'],
+        ];
+    }
+
+    public function testFileSmallerThanTheMinimumSizeIsRejected(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File size must not be smaller than 1Ki.');
+
+        (new FileRule())->validate($this->psr7File(512), ['min_size=1Ki']);
+    }
+
+    public function testImageSmallerThanTheMinimumSizeIsRejected(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File size must not be smaller than 1Ki.');
+
+        (new ImageRule())->validate($this->psr7File(512, $this->fixture('image.png')), ['min_size=1Ki']);
+    }
+
+    public function testEmptyFileIsRejectedAsEmptyIfThereIsAMinimumSizeLargerThanZero(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File is empty.');
+
+        (new FileRule())->validate($this->psr7File(0), ['min_size=1Ki']);
+    }
+
+    public function testEveryFileOfAListIsComparedWithTheMinimumSize(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('File size must not be smaller than 1Ki.');
+
+        (new FileRule())->validate([$this->psr7File(2048), $this->psr7File(512)], ['min_size=1Ki']);
+    }
+
+    public function testFileBetweenTheMinimumAndTheMaximumSizeIsAccepted(): void
+    {
+        (new FileRule())->validate($this->psr7File(1500), ['max_size=2Ki', 'min_size=1Ki']);
+        (new FileRule())->validate($this->psr7File(1500), ['min_size=1Ki', '2Ki']);
+
+        $this->addToAssertionCount(2);
+    }
+
+    public function testMinimumSizeAsLargeAsTheMaximumSizeIsAccepted(): void
+    {
+        (new FileRule())->validate($this->psr7File(1024), ['max_size=1Ki', 'min_size=1Ki']);
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testMinimumSizeLargerThanTheMaximumSizeIsRejected(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Minimum size must not be larger than the maximum size.');
+
+        (new FileRule())->validate($this->psr7File(1024), ['max_size=1Ki', 'min_size=2Ki']);
+    }
+
+    public function testAMaximumSizeOfZeroIsAcceptedWithAMinimumSizeOfZero(): void
+    {
+        (new FileRule())->validate($this->psr7File(0), ['max_size=0', 'min_size=0']);
+
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * @param list<string> $parameters
+     */
+    #[DataProvider('invalidParametersProvider')]
+    public function testInvalidParametersAreRejected(array $parameters, string $message): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage($message);
+
+        (new FileRule())->validate($this->psr7File(1024), $parameters);
+    }
+
+    /**
+     * @return array<string, array{list<string>, string}>
+     */
+    public static function invalidParametersProvider(): array
+    {
+        return [
+            'unknown name' => [['other=1'], 'Invalid parameter: other=1'],
+            'repeated minimum' => [['min_size=1', 'min_size=2'], 'Invalid parameter: min_size=2'],
+            'repeated maximum' => [['max_size=1Ki', 'max_size=2Ki'], 'Invalid parameter: max_size=2Ki'],
+            'positional and named maximum' => [['1Ki', 'max_size=2Ki'], 'Invalid parameter: max_size=2Ki'],
+            'two positional' => [['1Ki', '2Ki'], 'Invalid parameter: 2Ki'],
+            'invalid minimum' => [['min_size=big'], 'Invalid size.'],
+            'invalid maximum' => [['max_size=big'], 'Invalid size.'],
+            'empty minimum' => [['min_size='], 'Invalid size.'],
+        ];
+    }
+
+    // -------------------------------------------------------------------------
     // Tests for the files normalized in a list.
     // -------------------------------------------------------------------------
 
@@ -740,7 +881,7 @@ final class FileValidationTest extends TestCase
         $rule->validate(['tmp_name' => $paths, 'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK], 'size' => [10, 20]], ['1Ki']);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('File must not be larger than 1Ki.');
+        $this->expectExceptionMessage('File size must not be larger than 1Ki.');
 
         $rule->validate(['tmp_name' => $paths, 'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK], 'size' => [10, 2048]], ['1Ki']);
     }

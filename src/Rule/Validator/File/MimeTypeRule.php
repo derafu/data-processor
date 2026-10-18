@@ -24,13 +24,15 @@ use Derafu\Support\File;
  * content (a CSV is detected as `text/plain`), so it is also allowed when its
  * name has the extension of an allowed type of text (`data.csv` for
  * `text/csv`).
+ *
+ * An empty file is detected as `application/x-empty`, so it is only valid if
+ * that type is one of the allowed.
  */
 final class MimeTypeRule extends AbstractFileRule
 {
     public function validate(mixed $value, array $parameters = []): void
     {
-        [$parameters, $allowEmpty] = $this->splitAllowEmpty($parameters);
-        $files = $this->validateFileArray($value, $allowEmpty);
+        $files = $this->validateFileArray($value);
 
         if (empty($parameters)) {
             throw new ValidationException('Allowed MIME types must be specified.');
@@ -41,11 +43,6 @@ final class MimeTypeRule extends AbstractFileRule
             $parameters
         );
         foreach ($files as $file) {
-            // An empty file that is allowed has no content to detect a type.
-            if ($allowEmpty && $file->size === 0) {
-                continue;
-            }
-
             $type = $this->typeOf($file)
                 ?? throw new ValidationException('File type could not be determined.');
 
