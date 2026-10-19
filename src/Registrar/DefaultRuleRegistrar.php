@@ -127,9 +127,14 @@ final class DefaultRuleRegistrar implements RuleRegistrarInterface
     {
         $registry
             // Array validation.
+            ->addValidatorRule('allowed_keys', Validator\Array\AllowedKeysRule::class)
+            ->addValidatorRule('contains', Validator\Array\ContainsRule::class)
+            ->addValidatorRule('dependent_required', Validator\Array\DependentRequiredRule::class)
             ->addValidatorRule('in', Validator\Array\InRule::class)
             ->addValidatorRule('choices', Validator\Array\InRule::class)
+            ->addValidatorRule('max_contains', Validator\Array\MaxContainsRule::class)
             ->addValidatorRule('max_items', Validator\Array\MaxItemsRule::class)
+            ->addValidatorRule('min_contains', Validator\Array\MinContainsRule::class)
             ->addValidatorRule('min_items', Validator\Array\MinItemsRule::class)
             ->addValidatorRule('notempty', Validator\Array\NotEmptyRule::class)
             ->addValidatorRule('unique', Validator\Array\UniqueRule::class)
