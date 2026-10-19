@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Validator\String;
 
+use Derafu\DataProcessor\Abstract\Rule\Validator\String\AbstractRegexRule;
 use Derafu\DataProcessor\Contract\RawParameterInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 

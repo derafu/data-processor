@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace Derafu\TestsDataProcessor\Rule\Validator\String;
 
+use Derafu\DataProcessor\Abstract\Rule\Validator\String\AbstractRegexRule;
 use Derafu\DataProcessor\Exception\ValidationException;
-use Derafu\DataProcessor\Rule\Validator\String\AbstractRegexRule;
 use Derafu\DataProcessor\Rule\Validator\String\RegexPatternRule;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;

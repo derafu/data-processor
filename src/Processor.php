@@ -21,6 +21,8 @@ use Derafu\Support\Value;
  * Main processor that applies rules in order.
  *
  *     cast -> transform -> sanitize -> validate
+ *
+ * A blank value skips the first three.
  */
 final class Processor implements ProcessorInterface
 {
@@ -38,35 +40,44 @@ final class Processor implements ProcessorInterface
         // Parse rules to ensure a set of rules in the correct format.
         $set = $rules instanceof RuleSet ? $rules : RuleSet::fromArray($this->parser->parse($rules));
 
-        // First, apply caster rule (only one allowed).
-        if ($set->cast !== null) {
-            [$rule, $parameters] = $this->resolver->resolve('cast', $set->cast);
-            $value = $rule->cast($value, $parameters);
-        }
-
-        // Apply transformer rules.
-        foreach ($set->transform as $ruleString) {
-            [$rule, $parameters] = $this->resolver->resolve('transform', $ruleString);
-            $value = $rule->transform($value, $parameters);
-        }
-
-        // Apply sanitizer rules.
-        foreach ($set->sanitize as $ruleString) {
-            [$rule, $parameters] = $this->resolver->resolve('sanitize', $ruleString);
-            $value = $rule->sanitize($value, $parameters);
-        }
-
-        // Finally apply validator rules.
         $validationRules = $set->validate;
-
-        // Check if nullable rule is present to determine if empty values should be allowed.
         $hasRequiredRule = $this->hasRequiredRule($validationRules);
 
+        // A blank value (`null`, `''` or `[]`) has nothing to cast, transform or
+        // sanitize. If the field is not required it is `null` and there is
+        // nothing to validate; if it is required, the validators run and the
+        // required rule says that the value is missing.
+        $isBlank = Value::isBlank($value);
+        if ($isBlank && !$hasRequiredRule) {
+            return null;
+        }
+
+        if (!$isBlank) {
+            // First, apply caster rule (only one allowed).
+            if ($set->cast !== null) {
+                [$rule, $parameters] = $this->resolver->resolve('cast', $set->cast);
+                $value = $rule->cast($value, $parameters);
+            }
+
+            // Apply transformer rules.
+            foreach ($set->transform as $ruleString) {
+                [$rule, $parameters] = $this->resolver->resolve('transform', $ruleString);
+                $value = $rule->transform($value, $parameters);
+            }
+
+            // Apply sanitizer rules.
+            foreach ($set->sanitize as $ruleString) {
+                [$rule, $parameters] = $this->resolver->resolve('sanitize', $ruleString);
+                $value = $rule->sanitize($value, $parameters);
+            }
+        }
+
+        // Finally apply validator rules. The value can become blank after the
+        // sanitizers (for example, a text that only had characters to remove):
+        // if it is not required, the rules are skipped.
         foreach ($validationRules as $ruleString) {
             [$rule, $parameters] = $this->resolver->resolve('validate', $ruleString);
 
-            // If not required rules is enabled and value is empty, skip
-            // all the rules except the required rule.
             if (!$hasRequiredRule && Value::isBlank($value) && !$this->isRequiredRule($ruleString)) {
                 continue;
             }
@@ -86,7 +97,7 @@ final class Processor implements ProcessorInterface
     private function hasRequiredRule(array $validationRules): bool
     {
         foreach ($validationRules as $ruleString) {
-            if (str_starts_with($ruleString, 'required')) {
+            if ($this->isRequiredRule($ruleString)) {
                 return true;
             }
         }
@@ -102,6 +113,6 @@ final class Processor implements ProcessorInterface
      */
     private function isRequiredRule(string $ruleString): bool
     {
-        return str_starts_with($ruleString, 'required');
+        return explode(':', $ruleString, 2)[0] === 'required';
     }
 }

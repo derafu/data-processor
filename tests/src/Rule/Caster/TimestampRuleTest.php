@@ -53,7 +53,11 @@ final class TimestampRuleTest extends TestCase
     public function testTheMessageSaysWhyTheValueIsNotValid(): void
     {
         $this->assertSame('Invalid timestamp format: null is not valid.', $this->messageOf(null));
-        $this->assertStringStartsWith('Invalid timestamp format: ', $this->messageOf('not a date'));
+        $this->assertSame(
+            'Invalid timestamp format: not an absolute ISO 8601 date.',
+            $this->messageOf('tomorrow')
+        );
+        $this->assertStringStartsWith('Invalid timestamp format: ', $this->messageOf('2024-01-15T10:30+25:00'));
         // What is neither text nor a date says its type, not the error of PHP.
         $this->assertSame('Invalid timestamp format: array is not valid.', $this->messageOf([2024, 1, 15]));
         $this->assertSame('Invalid timestamp format: bool is not valid.', $this->messageOf(true));
@@ -85,7 +89,7 @@ final class TimestampRuleTest extends TestCase
             'date_string' => ['2024-01-15', Carbon::parse('2024-01-15 00:00:00')->timestamp],
             'carbon_instance' => [Carbon::create(2024, 1, 15, 15, 30, 0), $timestamp],
             'datetime_immutable' => [new DateTimeImmutable('2024-01-15 15:30:00'), $timestamp],
-            'relative_time' => ['tomorrow', Carbon::parse('2024-01-02 00:00:00')->timestamp],
+            'iso8601_with_offset' => ['2024-01-15T15:30:00+00:00', 1705332600],
         ];
     }
 
@@ -96,6 +100,10 @@ final class TimestampRuleTest extends TestCase
     {
         return [
             'invalid_datetime' => ['not a timestamp'],
+            'relative_text' => ['tomorrow'],
+            'relative_offset' => ['+1 week'],
+            'ambiguous_format' => ['01/02/2024'],
+            'offset_that_does_not_exist' => ['2024-01-15T10:30+25:00'],
             'null' => [null],
             'array' => [[2024,1,15]],
             'boolean' => [true],

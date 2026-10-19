@@ -71,6 +71,8 @@ final class FloatRuleTest extends TestCase
         return [
             'non_numeric_string' => ['hello'],
             'mixed_string' => ['123.45abc'],
+            'out_of_range' => ['1e999'],
+            'out_of_range_negative' => ['-1e999'],
             'array' => [[1,2,3]],
             'object' => [new \stdClass()],
         ];

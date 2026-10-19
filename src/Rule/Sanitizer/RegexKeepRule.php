@@ -12,11 +12,10 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Sanitizer;
 
-use Derafu\DataProcessor\Contract\RawParameterInterface;
-use Derafu\DataProcessor\Contract\SanitizerRuleInterface;
+use Derafu\DataProcessor\Abstract\Rule\Sanitizer\AbstractRegexSanitizerRule;
 use Derafu\DataProcessor\Exception\SanitizationException;
 
-final class RegexKeepRule implements SanitizerRuleInterface, RawParameterInterface
+final class RegexKeepRule extends AbstractRegexSanitizerRule
 {
     public function sanitize(mixed $value, array $parameters = []): mixed
     {
@@ -28,8 +27,10 @@ final class RegexKeepRule implements SanitizerRuleInterface, RawParameterInterfa
             throw new SanitizationException('Pattern parameter must be specified.');
         }
 
-        preg_match_all($parameters[0], $value, $matches);
-
-        return implode('', $matches[0]);
+        return $this->apply(
+            static fn (): string|false => preg_match_all($parameters[0], $value, $matches) === false
+                ? false
+                : implode('', $matches[0])
+        );
     }
 }

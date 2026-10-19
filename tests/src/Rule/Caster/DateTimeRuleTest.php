@@ -61,7 +61,11 @@ final class DateTimeRuleTest extends TestCase
             'Invalid datetime format: numeric is not valid.',
             $this->messageOf(123)
         );
-        $this->assertStringStartsWith('Invalid datetime format: ', $this->messageOf('not a date'));
+        $this->assertSame(
+            'Invalid datetime format: not an absolute ISO 8601 date.',
+            $this->messageOf('tomorrow')
+        );
+        $this->assertStringStartsWith('Invalid datetime format: ', $this->messageOf('2024-01-15T10:30+25:00'));
         // What is neither text nor a date says its type, not the error of PHP.
         $this->assertSame('Invalid datetime format: array is not valid.', $this->messageOf([2024, 1, 15]));
         $this->assertSame('Invalid datetime format: bool is not valid.', $this->messageOf(true));
@@ -95,8 +99,7 @@ final class DateTimeRuleTest extends TestCase
                 new DateTimeImmutable('2024-01-15 15:30:00'),
                 '2024-01-15 15:30:00',
             ],
-            'human_datetime' => ['15 January 2024 15:30', '2024-01-15 15:30:00'],
-            'relative_time' => ['tomorrow', '2024-01-02 00:00:00'],
+            'datetime_without_seconds' => ['2024-01-15T15:30', '2024-01-15 15:30:00'],
             'iso8601' => ['2024-01-15T15:30:00+00:00', '2024-01-15 15:30:00'],
         ];
     }
@@ -108,6 +111,11 @@ final class DateTimeRuleTest extends TestCase
     {
         return [
             'invalid_datetime' => ['not a datetime'],
+            'relative_text' => ['tomorrow'],
+            'relative_offset' => ['+1 week'],
+            'human_datetime' => ['15 January 2024 15:30'],
+            'ambiguous_format' => ['01/02/2024 10:30'],
+            'offset_that_does_not_exist' => ['2024-01-15T10:30+25:00'],
             'null' => [null],
             'number' => [123],
             'array' => [[2024,1,15,15,30,0]],

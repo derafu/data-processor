@@ -19,15 +19,16 @@ final class DigitsRangeRule implements ValidatorRuleInterface
 {
     public function validate(mixed $value, array $parameters = []): void
     {
-        if (!is_numeric($value)) {
-            throw new ValidationException('Value must be numeric.');
+        $text = is_int($value) ? (string) $value : $value;
+        if (!is_string($text) || !ctype_digit($text)) {
+            throw new ValidationException('Value must contain only digits.');
         }
 
         if (count($parameters) < 2) {
             throw new ValidationException('Min and max digits must be specified.');
         }
 
-        $length = strlen((string)(int)$value);
+        $length = strlen($text);
         $min = (int)$parameters[0];
         $max = (int)$parameters[1];
 

@@ -17,6 +17,10 @@ use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Processor;
 use Derafu\DataProcessor\ProcessorFactory;
 use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
+use Derafu\DataProcessor\Rule\Validator\Date\DatetimeLocalRule;
+use Derafu\DataProcessor\Rule\Validator\Date\MonthRule;
+use Derafu\DataProcessor\Rule\Validator\Date\TimeRule;
+use Derafu\DataProcessor\Rule\Validator\Date\WeekRule;
 use Derafu\DataProcessor\Rule\Validator\Financial\BicRule;
 use Derafu\DataProcessor\Rule\Validator\Financial\CardNumberRule;
 use Derafu\DataProcessor\Rule\Validator\Financial\IbanRule;
@@ -28,8 +32,10 @@ use Derafu\DataProcessor\Rule\Validator\I18n\TimezoneRule;
 use Derafu\DataProcessor\Rule\Validator\Id\UuidRule;
 use Derafu\DataProcessor\Rule\Validator\Internet\EmailRule;
 use Derafu\DataProcessor\Rule\Validator\Internet\HostnameRule;
+use Derafu\DataProcessor\Rule\Validator\Internet\HostRule;
 use Derafu\DataProcessor\Rule\Validator\Internet\IpRule;
 use Derafu\DataProcessor\Rule\Validator\Internet\UrlRule;
+use Derafu\DataProcessor\Rule\Validator\String\ColorRule;
 use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
@@ -58,6 +64,12 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(BicRule::class)]
 #[CoversClass(CardNumberRule::class)]
 #[CoversClass(HostnameRule::class)]
+#[CoversClass(HostRule::class)]
+#[CoversClass(WeekRule::class)]
+#[CoversClass(TimeRule::class)]
+#[CoversClass(MonthRule::class)]
+#[CoversClass(DatetimeLocalRule::class)]
+#[CoversClass(ColorRule::class)]
 #[UsesClass(RuleSet::class)]
 final class FormatValidationTest extends TestCase
 {
@@ -110,6 +122,79 @@ final class FormatValidationTest extends TestCase
                 'test @example.com',
                 false,
             ],
+            'valid_email_internationalized_domain' => [
+                'jose@exämple.com',
+                true,
+            ],
+            'valid_email_punycode_domain' => [
+                'jose@xn--exmple-cua.com',
+                true,
+            ],
+            'invalid_email_unicode_local_part' => [
+                'josé@example.com',
+                false,
+            ],
+            'invalid_email_internationalized_domain_with_spaces' => [
+                'jose@ex ämple.com',
+                false,
+            ],
+        ];
+    }
+
+    #[DataProvider('htmlInputValidationProvider')]
+    public function testHtmlInputValidation(string $input, string $rule, ?string $message): void
+    {
+        if ($message !== null) {
+            $this->expectException(ValidationException::class);
+            $this->expectExceptionMessage($message);
+        }
+
+        $result = $this->processor->process($input, [
+            'validate' => [$rule],
+        ]);
+
+        $this->assertSame($input, $result);
+    }
+
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
+    public static function htmlInputValidationProvider(): array
+    {
+        return [
+            'color_lowercase' => ['#1a2b3c', 'color', null],
+            'color_uppercase' => ['#1A2B3C', 'color', null],
+            'color_short' => ['#fff', 'color', 'Invalid color format.'],
+            'color_name' => ['red', 'color', 'Invalid color format.'],
+            'color_not_hexadecimal' => ['#12345g', 'color', 'Invalid color format.'],
+            'color_with_line_break' => ["#1a2b3c\n", 'color', 'Invalid color format.'],
+            'month_valid' => ['2024-05', 'month', null],
+            'month_thirteen' => ['2024-13', 'month', 'Invalid month format.'],
+            'month_zero' => ['2024-00', 'month', 'Invalid month format.'],
+            'month_year_zero' => ['0000-05', 'month', 'Invalid month format.'],
+            'month_with_day' => ['2024-05-01', 'month', 'Invalid month format.'],
+            'week_valid' => ['2024-W22', 'week', null],
+            'week_53_in_a_year_with_52' => ['2024-W53', 'week', 'Invalid week format.'],
+            'week_53_in_a_year_with_53' => ['2026-W53', 'week', null],
+            'week_52_in_a_year_with_52' => ['2024-W52', 'week', null],
+            'week_zero' => ['2024-W00', 'week', 'Invalid week format.'],
+            'week_54' => ['2026-W54', 'week', 'Invalid week format.'],
+            'week_year_zero' => ['0000-W01', 'week', 'Invalid week format.'],
+            'week_lowercase' => ['2024-w22', 'week', 'Invalid week format.'],
+            'time_minutes' => ['10:30', 'time', null],
+            'time_seconds' => ['10:30:15', 'time', null],
+            'time_midnight' => ['00:00', 'time', null],
+            'time_hour_25' => ['25:00', 'time', 'Invalid time format.'],
+            'time_minute_60' => ['10:60', 'time', 'Invalid time format.'],
+            'time_second_60' => ['10:30:60', 'time', 'Invalid time format.'],
+            'time_without_zero' => ['9:30', 'time', 'Invalid time format.'],
+            'datetime_local_minutes' => ['2024-05-01T10:30', 'datetime_local', null],
+            'datetime_local_seconds' => ['2024-05-01T10:30:15', 'datetime_local', null],
+            'datetime_local_with_space' => ['2024-05-01 10:30', 'datetime_local', 'Invalid datetime-local format.'],
+            'datetime_local_without_time' => ['2024-05-01', 'datetime_local', 'Invalid datetime-local format.'],
+            'datetime_local_with_zone' => ['2024-05-01T10:30Z', 'datetime_local', 'Invalid datetime-local format.'],
+            'datetime_local_date_does_not_exist' => ['2024-02-30T10:30', 'datetime_local', 'Invalid datetime-local format.'],
+            'datetime_local_hour_25' => ['2024-05-01T25:00', 'datetime_local', 'Invalid datetime-local format.'],
         ];
     }
 
@@ -150,6 +235,18 @@ final class FormatValidationTest extends TestCase
             'valid_url_with_query' => [
                 'https://example.com?param=value',
                 true,
+            ],
+            'valid_url_other_scheme' => [
+                'ftp://example.com/a',
+                true,
+            ],
+            'valid_url_idn' => [
+                'http://münchen.de/a?b=1',
+                true,
+            ],
+            'invalid_url_idn' => [
+                'http://-münchen.de',
+                false,
             ],
             'invalid_url_no_protocol' => [
                 'example.com',
@@ -241,8 +338,28 @@ final class FormatValidationTest extends TestCase
                 '123e4567-e89b-42d3-a456-426614174000',
                 true,
             ],
-            'invalid_uuid_v4' => [
+            'valid_uuid_v1' => [
                 '123e4567-e89b-12d3-a456-426614174000',
+                true,
+            ],
+            'valid_uuid_v7' => [
+                '018f4b0a-7b6e-7c3a-8f5e-2b4f6a7c8d9e',
+                true,
+            ],
+            'valid_uuid_nil' => [
+                '00000000-0000-0000-0000-000000000000',
+                true,
+            ],
+            'valid_uuid_max' => [
+                'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF',
+                true,
+            ],
+            'invalid_uuid_version' => [
+                '123e4567-e89b-92d3-a456-426614174000',
+                false,
+            ],
+            'invalid_uuid_variant' => [
+                '123e4567-e89b-42d3-c456-426614174000',
                 false,
             ],
             'invalid_uuid_format' => [
@@ -291,6 +408,31 @@ final class FormatValidationTest extends TestCase
                 ['language'],
                 true,
             ],
+            'valid_language_three_letters' => [
+                'fil',
+                ['language'],
+                true,
+            ],
+            'valid_language_with_hyphen_region' => [
+                'es-CL',
+                ['language'],
+                true,
+            ],
+            'invalid_language_region' => [
+                'es_ZZ',
+                ['language'],
+                false,
+            ],
+            'invalid_language_long_region' => [
+                'es_ZZZZ',
+                ['language'],
+                false,
+            ],
+            'invalid_language_empty_region' => [
+                'es_',
+                ['language'],
+                false,
+            ],
             'invalid_language' => [
                 'xx',
                 ['language'],
@@ -298,6 +440,16 @@ final class FormatValidationTest extends TestCase
             ],
             'valid_locale' => [
                 'es_CL',
+                ['locale'],
+                true,
+            ],
+            'valid_locale_with_hyphen' => [
+                'es-CL',
+                ['locale'],
+                true,
+            ],
+            'valid_locale_with_script' => [
+                'sr-Latn-RS',
                 ['locale'],
                 true,
             ],
@@ -354,6 +506,26 @@ final class FormatValidationTest extends TestCase
                 ['currency'],
                 true,
             ],
+            'valid_currency_fund' => [
+                'CLF',
+                ['currency'],
+                true,
+            ],
+            'valid_currency_new' => [
+                'ZWG',
+                ['currency'],
+                true,
+            ],
+            'invalid_currency_withdrawn' => [
+                'HRK',
+                ['currency'],
+                false,
+            ],
+            'invalid_currency_metal' => [
+                'XAU',
+                ['currency'],
+                false,
+            ],
             'invalid_currency' => [
                 'AAA',
                 ['currency'],
@@ -404,6 +576,31 @@ final class FormatValidationTest extends TestCase
             ],
             'invalid_timezone' => [
                 'Invalid/Timezone',
+                ['timezone'],
+                false,
+            ],
+            'valid_timezone_offset_minimum' => [
+                'UTC-12',
+                ['timezone'],
+                true,
+            ],
+            'valid_timezone_offset_maximum' => [
+                'UTC+14',
+                ['timezone'],
+                true,
+            ],
+            'invalid_timezone_offset_below_minimum' => [
+                'UTC-13',
+                ['timezone'],
+                false,
+            ],
+            'invalid_timezone_offset_far_below_minimum' => [
+                'UTC-14',
+                ['timezone'],
+                false,
+            ],
+            'invalid_timezone_offset_above_maximum' => [
+                'UTC+15',
                 ['timezone'],
                 false,
             ],
@@ -470,6 +667,41 @@ final class FormatValidationTest extends TestCase
                 ['card_number'],
                 false,
             ],
+            'valid_card_number_with_spaces' => [
+                '4532 0151 1283 0366',
+                ['card_number'],
+                true,
+            ],
+            'valid_card_number_with_dashes' => [
+                '4532-0151-1283-0366',
+                ['card_number'],
+                true,
+            ],
+            'invalid_card_number_with_letters_around' => [
+                'abc4532015112830366xyz',
+                ['card_number'],
+                false,
+            ],
+            'invalid_card_number_with_other_separators' => [
+                '4532.0151.1283.0366',
+                ['card_number'],
+                false,
+            ],
+            'valid_iban_with_spaces' => [
+                'ES91 2100 0418 4502 0005 1332',
+                ['iban'],
+                true,
+            ],
+            'valid_iban_with_letters_in_the_account' => [
+                'GB82WEST12345698765432',
+                ['iban'],
+                true,
+            ],
+            'invalid_iban_checksum' => [
+                'GB82WEST12345698765433',
+                ['iban'],
+                false,
+            ],
         ];
     }
 
@@ -522,6 +754,76 @@ final class FormatValidationTest extends TestCase
                 'localhost',
                 ['hostname'],
                 true,
+            ],
+            'invalid_hostname_numeric_last_label' => [
+                'example.123',
+                ['hostname'],
+                false,
+            ],
+            'invalid_hostname_ipv4' => [
+                '1.2.3.4',
+                ['hostname'],
+                false,
+            ],
+            'valid_hostname_label_with_digits' => [
+                'a1.b2',
+                ['hostname'],
+                true,
+            ],
+            'valid_host_name' => [
+                'example.com',
+                ['host'],
+                true,
+            ],
+            'valid_host_ipv4' => [
+                '1.2.3.4',
+                ['host'],
+                true,
+            ],
+            'valid_host_ipv6' => [
+                '2001:db8::1',
+                ['host'],
+                true,
+            ],
+            'invalid_host' => [
+                'example.123',
+                ['host'],
+                false,
+            ],
+            'invalid_host_spaces' => [
+                'not a host',
+                ['host'],
+                false,
+            ],
+            'valid_host_ipv4_only' => [
+                '1.2.3.4',
+                ['host:v4'],
+                true,
+            ],
+            'valid_host_name_with_ip_version' => [
+                'example.com',
+                ['host:v4'],
+                true,
+            ],
+            'invalid_host_ipv6_for_v4' => [
+                '2001:db8::1',
+                ['host:v4'],
+                false,
+            ],
+            'invalid_host_ipv4_for_v6' => [
+                '1.2.3.4',
+                ['host:v6'],
+                false,
+            ],
+            'valid_hostname_single_label' => [
+                'myhost',
+                ['hostname'],
+                true,
+            ],
+            'invalid_hostname_single_numeric_label' => [
+                '123',
+                ['hostname'],
+                false,
             ],
         ];
     }

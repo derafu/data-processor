@@ -58,7 +58,8 @@ final class LengthRuleTest extends TestCase
             'unicode_too_short' => ['hé', ['5'], false],
             'non_string' => [123, ['3'], false],
             'missing_parameter' => ['hello', [], false],
-            'zero_length_treated_as_missing' => ['', ['0'], false],
+            'zero_length' => ['', ['0'], true],
+            'zero_length_with_text' => ['a', ['0'], false],
         ];
     }
 }

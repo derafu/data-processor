@@ -23,20 +23,19 @@ final class HostnameRule implements ValidatorRuleInterface
             throw new ValidationException('Value must be a string.');
         }
 
-        // Allow localhost.
-        if ($value === 'localhost') {
-            return;
-        }
-
         // Convert to ASCII to handle internationalized domain names.
         if (function_exists('idn_to_ascii')) {
             $value = idn_to_ascii($value) ?: $value;
         }
 
-        // RFC 1034/1035.
-        $pattern = '/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i';
+        // RFC 952 and RFC 1123: one or more labels. A name of one label (as
+        // `localhost` or `myhost`) is a host name, but the label of the right
+        // can not be only digits, because RFC 1123 (section 2.1) says that a
+        // host name can not look like an IP address (`1.2.3.4`).
+        $pattern = '/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i';
 
-        if (!preg_match($pattern, $value)) {
+        $labels = explode('.', $value);
+        if (!preg_match($pattern, $value) || ctype_digit($labels[array_key_last($labels)])) {
             throw new ValidationException('Invalid hostname format.');
         }
 
@@ -46,7 +45,7 @@ final class HostnameRule implements ValidatorRuleInterface
         }
 
         // Check the length of each part.
-        foreach (explode('.', $value) as $part) {
+        foreach ($labels as $part) {
             if (strlen($part) > 63) {
                 throw new ValidationException('Hostname part too long.');
             }

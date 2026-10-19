@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace Derafu\TestsDataProcessor\Rule\Validator\File;
 
+use Derafu\DataProcessor\Abstract\Rule\Validator\File\AbstractFileRule;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Processor;
 use Derafu\DataProcessor\ProcessorFactory;
 use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
-use Derafu\DataProcessor\Rule\Validator\File\AbstractFileRule;
 use Derafu\DataProcessor\Rule\Validator\File\FileRule;
 use Derafu\DataProcessor\Rule\Validator\File\ImageRule;
 use Derafu\DataProcessor\Rule\Validator\File\MimeTypeRule;
@@ -557,6 +557,61 @@ final class FileValidationTest extends TestCase
         $this->expectExceptionMessage('Invalid file type image/png. Allowed types: application/pdf, text/plain.');
 
         (new MimeTypeRule())->validate($this->psr7File(1, $this->fixture('image.png')), ['application/pdf', 'text/plain']);
+    }
+
+    public function testWholeTypeAllowsAnySubtype(): void
+    {
+        (new MimeTypeRule())->validate($this->psr7File(1, $this->fixture('image.png')), ['image/*']);
+        (new MimeTypeRule())->validate($this->psr7File(1, $this->fixture('image.jpeg')), [' Image/* ']);
+        (new MimeTypeRule())->validate($this->psr7File(1, $this->fixture('document.pdf')), ['image/*', 'application/*']);
+        (new MimeTypeRule())->validate($this->psr7File(1, $this->fixture('text.txt')), ['text/*']);
+
+        $this->addToAssertionCount(4);
+    }
+
+    public function testWholeTypeDoesNotAllowAnotherType(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type application/pdf. Allowed types: image/*.');
+
+        (new MimeTypeRule())->validate($this->psr7File(1, $this->fixture('document.pdf')), ['image/*']);
+    }
+
+    /**
+     * @param string $pattern
+     */
+    #[DataProvider('wildcardThatIsNotAWholeTypeProvider')]
+    public function testWildcardThatIsNotAWholeTypeIsTextAndNeverMatches(string $pattern): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Invalid file type image/png. Allowed types: ' . $pattern . '.');
+
+        (new MimeTypeRule())->validate($this->psr7File(1, $this->fixture('image.png')), [$pattern]);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function wildcardThatIsNotAWholeTypeProvider(): array
+    {
+        return [
+            'any type' => ['*/*'],
+            'any subtype of any type' => ['*/png'],
+            'part of the subtype' => ['image/p*'],
+            'part of the type' => ['im*/png'],
+            'only the type' => ['image*'],
+            'without type' => ['/*'],
+            'with a type that has a bar' => ['image/png/*'],
+        ];
+    }
+
+    public function testWholeTypeWorksThroughTheProcessor(): void
+    {
+        $file = $this->psr7File(1, $this->fixture('image.png'));
+
+        $result = ProcessorFactory::create()->process($file, ['validate' => ['mimetype:image/*']]);
+
+        $this->assertSame($file, $result);
     }
 
     public function testTheTypeRulesNeedTheAllowedTypesWhenTheFileIsPsr7(): void

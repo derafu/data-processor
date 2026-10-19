@@ -62,7 +62,15 @@ final class DateRuleTest extends TestCase
             'Invalid date format: numeric is not valid.',
             $this->messageOf(123)
         );
-        $this->assertStringStartsWith('Invalid date format: ', $this->messageOf('not a date'));
+        $this->assertSame(
+            'Invalid date format: not an absolute ISO 8601 date.',
+            $this->messageOf('not a date')
+        );
+        $this->assertSame(
+            'Invalid date format: not an absolute ISO 8601 date.',
+            $this->messageOf('tomorrow')
+        );
+        $this->assertStringStartsWith('Invalid date format: ', $this->messageOf('2024-01-15T10:30+25:00'));
         // What is neither text nor a date says its type, not the error of PHP.
         $this->assertSame('Invalid date format: array is not valid.', $this->messageOf([2024, 1, 15]));
         $this->assertSame('Invalid date format: bool is not valid.', $this->messageOf(true));
@@ -90,7 +98,7 @@ final class DateRuleTest extends TestCase
             'datetime_string' => ['2024-01-15 15:30:00', '2024-01-15'],
             'carbon_instance' => [Carbon::create(2024, 1, 15, 15, 30, 0), '2024-01-15'],
             'datetime_immutable' => [new DateTimeImmutable('2024-01-15 15:30:00'), '2024-01-15'],
-            'human_date' => ['15 January 2024', '2024-01-15'],
+            'iso8601_with_offset' => ['2024-01-15T23:30:00-03:00', '2024-01-15'],
         ];
     }
 
@@ -101,6 +109,14 @@ final class DateRuleTest extends TestCase
     {
         return [
             'invalid_date' => ['not a date'],
+            'relative_text' => ['tomorrow'],
+            'relative_offset' => ['+1 week'],
+            'now' => ['now'],
+            'human_date' => ['15 January 2024'],
+            'ambiguous_format' => ['01/02/2024'],
+            'day_first_format' => ['15-01-2024'],
+            'date_that_does_not_exist' => ['2024-02-30'],
+            'offset_that_does_not_exist' => ['2024-01-15T10:30+25:00'],
             'null' => [null],
             'number' => [123],
             'array' => [[2024,1,15]],

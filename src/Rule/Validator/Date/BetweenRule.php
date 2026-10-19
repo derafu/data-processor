@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Validator\Date;
 
-use Carbon\Carbon;
-use Carbon\Exceptions\InvalidFormatException;
+use Derafu\DataProcessor\Abstract\Rule\Validator\Date\AbstractDateRule;
 use Derafu\DataProcessor\Exception\ValidationException;
 
 final class BetweenRule extends AbstractDateRule
@@ -24,13 +23,9 @@ final class BetweenRule extends AbstractDateRule
             throw new ValidationException('From and to dates must be specified.');
         }
 
-        try {
-            $date = $this->parseDate($value);
-            $from = Carbon::parse($parameters[0]);
-            $to = Carbon::parse($parameters[1]);
-        } catch (InvalidFormatException $e) {
-            throw new ValidationException('Invalid date format.');
-        }
+        $from = $this->parseComparison($parameters[0]);
+        $to = $this->parseComparison($parameters[1]);
+        $date = $this->parseDate($value);
 
         if (!$date->between($from, $to, true)) { // true to make it inclusive.
             throw new ValidationException([

@@ -24,7 +24,12 @@ final class CardNumberRule implements ValidatorRuleInterface
         }
 
         // Remove spaces and dashes.
-        $number = preg_replace('/\D/', '', $value) ?? '';
+        $number = str_replace([' ', '-'], '', $value);
+
+        // Only digits can be left.
+        if (preg_match('/\D/', $number) === 1) {
+            throw new ValidationException('Invalid card number format.');
+        }
 
         // Check length.
         if (strlen($number) < 13 || strlen($number) > 19) {

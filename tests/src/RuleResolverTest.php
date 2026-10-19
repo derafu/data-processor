@@ -59,6 +59,7 @@ final class RuleResolverTest extends TestCase
             'with_colon' => ['regex:/^a:b$/', ['/^a:b$/']],
             'with_several_commas' => ['regex:/a,b,c/', ['/a,b,c/']],
             'without_parameter' => ['regex', []],
+            'raw_rule_keeps_the_backslash' => ['regex:/a\\,b/', ['/a\\,b/']],
         ];
     }
 
@@ -83,6 +84,9 @@ final class RuleResolverTest extends TestCase
             'two_parameters' => ['range:1,5', ['1', '5']],
             'one_parameter' => ['range:1', ['1']],
             'without_parameter' => ['range', []],
+            'escaped_comma' => ['range:a\\,b,c', ['a,b', 'c']],
+            'only_escaped_comma' => ['range:a\\,b', ['a,b']],
+            'backslash_without_comma' => ['range:a\\b,c', ['a\\b', 'c']],
         ];
     }
 }

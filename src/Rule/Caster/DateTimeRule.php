@@ -17,9 +17,12 @@ use Carbon\Exceptions\InvalidFormatException;
 use DateTimeInterface;
 use Derafu\DataProcessor\Contract\CasterRuleInterface;
 use Derafu\DataProcessor\Exception\CastingException;
+use Derafu\DataProcessor\Trait\Rule\AbsoluteDateTrait;
 
 final class DateTimeRule implements CasterRuleInterface
 {
+    use AbsoluteDateTrait;
+
     public function cast(mixed $value, array $parameters = []): Carbon
     {
         if ($value === null) {
@@ -37,6 +40,10 @@ final class DateTimeRule implements CasterRuleInterface
                 'Invalid datetime format: {type} is not valid.',
                 'type' => get_debug_type($value),
             ]);
+        }
+
+        if (is_string($value) && !$this->isAbsoluteDate($value)) {
+            throw new CastingException('Invalid datetime format: not an absolute ISO 8601 date.');
         }
 
         try {

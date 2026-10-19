@@ -14,9 +14,12 @@ namespace Derafu\DataProcessor\Rule\Validator\Numeric;
 
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
+use Derafu\DataProcessor\Trait\Rule\Validator\NumericParameterTrait;
 
 final class LessThanRule implements ValidatorRuleInterface
 {
+    use NumericParameterTrait;
+
     public function validate(mixed $value, array $parameters = []): void
     {
         if (!is_numeric($value)) {
@@ -27,7 +30,9 @@ final class LessThanRule implements ValidatorRuleInterface
             throw new ValidationException('Comparison value must be specified.');
         }
 
-        if ((float)$value >= (float)$parameters[0]) {
+        $limit = $this->numberParameter($parameters[0]);
+
+        if ((float)$value >= $limit) {
             throw new ValidationException([
                 'Must be less than {value}.',
                 'value' => $parameters[0],

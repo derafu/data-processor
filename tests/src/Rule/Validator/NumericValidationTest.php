@@ -187,6 +187,31 @@ final class NumericValidationTest extends TestCase
                 ['digits:5'],
                 false,
             ],
+            'valid_digits_leading_zeros' => [
+                '007',
+                ['digits:3'],
+                true,
+            ],
+            'invalid_digits_negative' => [
+                '-123',
+                ['digits:3'],
+                false,
+            ],
+            'invalid_digits_decimal_short' => [
+                '12.5',
+                ['digits:2'],
+                false,
+            ],
+            'valid_digits_beyond_integer_limit' => [
+                '1234567890123456789012',
+                ['digits:22'],
+                true,
+            ],
+            'invalid_digits_range_negative' => [
+                '-123',
+                ['digits_range:2,4'],
+                false,
+            ],
             'valid_digits_range' => [
                 '1234',
                 ['digits_range:3,5'],
@@ -259,6 +284,46 @@ final class NumericValidationTest extends TestCase
                 0,
                 ['multiple_of:5'],
                 true,
+            ],
+            'valid_multiple_of_float_noise' => [
+                0.3,
+                ['multiple_of:0.1'],
+                true,
+            ],
+            'valid_multiple_of_cents' => [
+                1.15,
+                ['multiple_of:0.01'],
+                true,
+            ],
+            'invalid_multiple_of_more_decimals' => [
+                1.155,
+                ['multiple_of:0.01'],
+                false,
+            ],
+            'valid_multiple_of_trailing_zeros' => [
+                '0.30',
+                ['multiple_of:0.1'],
+                true,
+            ],
+            'valid_multiple_of_exponent' => [
+                '1e3',
+                ['multiple_of:1e1'],
+                true,
+            ],
+            'valid_multiple_of_huge_value' => [
+                '123456789012345678901234567890',
+                ['multiple_of:10'],
+                true,
+            ],
+            'invalid_multiple_of_huge_value' => [
+                '123456789012345678901234567891',
+                ['multiple_of:10'],
+                false,
+            ],
+            'invalid_multiple_of_not_finite' => [
+                '1e999',
+                ['multiple_of:10'],
+                false,
             ],
         ];
     }

@@ -62,8 +62,11 @@ final class InRuleTest extends TestCase
         return [
             'string_choice' => ['apple', ['apple', 'banana', 'orange']],
             'integer_choice' => [1, [1, 2, 3]],
-            'boolean_choice' => [true, [true, false]],
-            'null_choice' => [null, ['apple', null, 'banana']],
+            'integer_as_text_choice' => [2, ['1', '2', '3']],
+            'text_as_integer_choice' => ['2', [1, 2, 3]],
+            'float_choice' => [2.0, ['1', '2', '3']],
+            'array_choice' => [['a', 'b'], ['a', 'b', 'c']],
+            'empty_array_choice' => [[], ['a', 'b']],
         ];
     }
 
@@ -75,7 +78,12 @@ final class InRuleTest extends TestCase
         return [
             'invalid_string' => ['grape', ['apple', 'banana', 'orange']],
             'invalid_integer' => [4, [1, 2, 3]],
-            'invalid_type' => [1, ['1', '2', '3']], // strict comparison
+            'boolean' => [true, ['1', '2', '3']],
+            'null' => [null, ['apple', '', 'banana']],
+            'invalid_array' => [['a', 'z'], ['a', 'b']],
+            'array_with_invalid_type' => [['a', true], ['a', '1']],
+            'nested_array' => [[['a']], ['a']],
+            'object' => [new \stdClass(), ['a']],
         ];
     }
 }

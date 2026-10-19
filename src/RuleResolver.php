@@ -50,9 +50,26 @@ final class RuleResolver implements RuleResolverInterface
         $parameters = match (true) {
             !isset($parts[1]) => [],
             $rule instanceof RawParameterInterface => [$parts[1]],
-            default => explode(',', $parts[1]),
+            default => $this->splitParameters($parts[1]),
         };
 
         return [$rule, $parameters];
+    }
+
+    /**
+     * Splits the parameters by comma. A comma that is part of a parameter is
+     * written as `\,`.
+     *
+     * @param string $parameters The parameters, as they were written.
+     * @return list<string> The parameters.
+     */
+    private function splitParameters(string $parameters): array
+    {
+        $parts = preg_split('/(?<!\\\\),/', $parameters);
+
+        return array_map(
+            static fn (string $part): string => str_replace('\\,', ',', $part),
+            $parts !== false ? $parts : [$parameters]
+        );
     }
 }

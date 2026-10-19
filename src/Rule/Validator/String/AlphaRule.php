@@ -23,7 +23,7 @@ final class AlphaRule implements ValidatorRuleInterface
             throw new ValidationException('Value must be a string.');
         }
 
-        if (!ctype_alpha($value)) {
+        if (preg_match('/^\pL+$/u', $value) !== 1) {
             throw new ValidationException('Value must contain only letters.');
         }
     }

@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace Derafu\TestsDataProcessor\Rule\Validator;
 
 use DateTimeImmutable;
+use Derafu\DataProcessor\Abstract\Rule\Validator\Date\AbstractDateRule;
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
-use Derafu\DataProcessor\Rule\Validator\Date\AbstractDateRule;
 use Derafu\DataProcessor\Rule\Validator\Date\AfterOrEqualRule;
 use Derafu\DataProcessor\Rule\Validator\Date\AfterRule;
 use Derafu\DataProcessor\Rule\Validator\Date\BeforeOrEqualRule;

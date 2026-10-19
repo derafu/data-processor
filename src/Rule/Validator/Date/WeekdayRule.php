@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Validator\Date;
 
+use Derafu\DataProcessor\Abstract\Rule\Validator\Date\AbstractDateRule;
 use Derafu\DataProcessor\Exception\ValidationException;
 
 final class WeekdayRule extends AbstractDateRule

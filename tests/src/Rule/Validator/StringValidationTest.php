@@ -91,6 +91,21 @@ final class StringValidationTest extends TestCase
                 ['alpha'],
                 false,
             ],
+            'valid_alpha_unicode' => [
+                'María',
+                ['alpha'],
+                true,
+            ],
+            'invalid_alpha_unicode_with_space' => [
+                'María José',
+                ['alpha'],
+                false,
+            ],
+            'valid_alpha_num_unicode' => [
+                'María2',
+                ['alpha_num'],
+                true,
+            ],
             'valid_alpha_num' => [
                 'Hello123',
                 ['alpha_num'],

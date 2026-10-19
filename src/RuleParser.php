@@ -82,9 +82,10 @@ final class RuleParser implements RuleParserInterface
                 // Handle transform, sanitize and validate groups:
                 // t(rule1|rule2), s(rule1|rule2), v(rule1|rule2)
                 $type = self::TYPE_MAP[$matches[1]];
-                // Solo agregar si hay reglas.
+                // Solo agregar si hay reglas. Los grupos repetidos se fusionan,
+                // en el orden en que aparecen.
                 if (!empty($matches[2])) {
-                    $parsed[$type] = explode('|', $matches[2]);
+                    $parsed[$type] = array_merge($parsed[$type], explode('|', $matches[2]));
                 }
             } elseif (preg_match('/^c\\(([^)]*)\\)$/', $part, $matches)) {
                 // Handle cast: c(string)

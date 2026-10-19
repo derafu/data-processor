@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Validator\File;
 
+use Derafu\DataProcessor\Abstract\Rule\Validator\File\AbstractFileRule;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\ValueObject\FileInfo;
 use Derafu\Support\File;
@@ -24,6 +25,9 @@ use Derafu\Support\File;
  * content (a CSV is detected as `text/plain`), so it is also allowed when its
  * name has the extension of an allowed type of text (`data.csv` for
  * `text/csv`).
+ *
+ * An allowed type can be a whole type with a wildcard in the subtype, as
+ * `image/*`. Any other use of `*` is taken as text, so it never matches.
  *
  * An empty file is detected as `application/x-empty`, so it is only valid if
  * that type is one of the allowed.
@@ -88,6 +92,12 @@ final class MimeTypeRule extends AbstractFileRule
             return true;
         }
 
+        foreach ($allowedTypes as $allowedType) {
+            if ($this->isWholeType($allowedType) && str_starts_with($type, substr($allowedType, 0, -1))) {
+                return true;
+            }
+        }
+
         if ($type !== 'text/plain' || $name === null) {
             return false;
         }
@@ -100,5 +110,19 @@ final class MimeTypeRule extends AbstractFileRule
         }
 
         return false;
+    }
+
+    /**
+     * Tells if an allowed type is a whole type, as `image/*`.
+     *
+     * Only the whole subtype can be the wildcard. A `*` in the type, or only
+     * a part of the subtype (`image/jp*`), is not a whole type.
+     *
+     * @param string $allowedType The allowed type, in lower case.
+     * @return bool
+     */
+    private function isWholeType(string $allowedType): bool
+    {
+        return preg_match('/^[^*\/]+\/\*$/', $allowedType) === 1;
     }
 }

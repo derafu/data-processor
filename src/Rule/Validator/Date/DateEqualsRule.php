@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Validator\Date;
 
-use Carbon\Carbon;
-use Carbon\Exceptions\InvalidFormatException;
+use Derafu\DataProcessor\Abstract\Rule\Validator\Date\AbstractDateRule;
 use Derafu\DataProcessor\Contract\RawParameterInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 
@@ -25,20 +24,14 @@ final class DateEqualsRule extends AbstractDateRule implements RawParameterInter
             throw new ValidationException('Comparison date must be specified.');
         }
 
-        try {
-            $date = $this->parseDate($value);
-            $comparison = $parameters[0] === 'now'
-                ? Carbon::now()
-                : Carbon::parse($parameters[0]);
+        $comparison = $this->parseComparison($parameters[0]);
+        $date = $this->parseDate($value);
 
-            if (!$date->equalTo($comparison)) {
-                throw new ValidationException([
-                    'Must be equal to {date}.',
-                    'date' => $comparison->toDateTimeString(),
-                ]);
-            }
-        } catch (InvalidFormatException $e) {
-            throw new ValidationException('Invalid date format.');
+        if (!$date->equalTo($comparison)) {
+            throw new ValidationException([
+                'Must be equal to {date}.',
+                'date' => $comparison->toDateTimeString(),
+            ]);
         }
     }
 }

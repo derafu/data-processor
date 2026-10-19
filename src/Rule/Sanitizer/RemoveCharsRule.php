@@ -24,10 +24,10 @@ final class RemoveCharsRule implements SanitizerRuleInterface, RawParameterInter
             throw new SanitizationException('Value must be string.');
         }
 
-        if (empty($parameters[0])) {
+        if (!isset($parameters[0]) || $parameters[0] === '') {
             throw new SanitizationException('Chars parameter must be specified.');
         }
 
-        return str_replace(str_split($parameters[0]), '', $value);
+        return str_replace(mb_str_split($parameters[0]), '', $value);
     }
 }

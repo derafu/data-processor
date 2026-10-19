@@ -32,6 +32,9 @@ final class FloatRule implements CasterRuleInterface
             ]);
         }
         $result = (float)$value;
+        if (is_string($value) && is_infinite($result)) {
+            throw new CastingException('Cannot cast out-of-range number to float.');
+        }
         if (isset($parameters[0])) {
             $decimals = (int)$parameters[0];
             return round($result, $decimals);

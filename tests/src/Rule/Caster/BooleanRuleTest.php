@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Derafu\TestsDataProcessor\Rule\Caster;
 
+use Derafu\DataProcessor\Exception\CastingException;
 use Derafu\DataProcessor\Rule\Caster\BooleanRule;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -54,6 +55,33 @@ final class BooleanRuleTest extends TestCase
             'null' => [null, false],
             'integer_1' => [1, true],
             'integer_0' => [0, false],
+            'uppercase_string' => ['YES', true],
+            'mixed_case_string' => ['Off', false],
+        ];
+    }
+
+    #[DataProvider('invalidBooleanCastDataProvider')]
+    public function testInvalidBooleanCast(mixed $input): void
+    {
+        $this->expectException(CastingException::class);
+        $this->expectExceptionMessage('Cannot cast value to boolean.');
+
+        $this->rule->cast($input);
+    }
+
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
+    public static function invalidBooleanCastDataProvider(): array
+    {
+        return [
+            'unknown_string' => ['maybe'],
+            'integer_2' => [2],
+            'negative_integer' => [-1],
+            'float' => [1.0],
+            'non_empty_array' => [[1]],
+            'empty_array' => [[]],
+            'object' => [new \stdClass()],
         ];
     }
 }

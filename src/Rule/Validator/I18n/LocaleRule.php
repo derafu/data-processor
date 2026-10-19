@@ -17,6 +17,17 @@ use Derafu\DataProcessor\Exception\ProcessorException;
 use Derafu\DataProcessor\Exception\ValidationException;
 use ResourceBundle;
 
+/**
+ * Validates a locale code, with `_` or `-` as separator: `es_CL` or `es-CL`.
+ *
+ * The value is not normalized, it is only validated. The locales are the ones
+ * of ICU, as the intl extension reads them (`ResourceBundle::getLocales('')`,
+ * with the data of CLDR), so the list depends on the version of ICU that PHP
+ * uses.
+ *
+ * @see https://unicode-org.github.io/icu/
+ * @see https://cldr.unicode.org/
+ */
 final class LocaleRule implements ValidatorRuleInterface
 {
     /**
@@ -35,7 +46,7 @@ final class LocaleRule implements ValidatorRuleInterface
             throw new ValidationException('Value must be a string.');
         }
 
-        if (!in_array($value, $this->locales)) {
+        if (!in_array(str_replace('-', '_', $value), $this->locales, true)) {
             throw new ValidationException('Invalid locale code.');
         }
     }

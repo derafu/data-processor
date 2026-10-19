@@ -23,7 +23,7 @@ final class AlphaNumRule implements ValidatorRuleInterface
             throw new ValidationException('Value must be a string.');
         }
 
-        if (!ctype_alnum($value)) {
+        if (preg_match('/^[\pL\pN]+$/u', $value) !== 1) {
             throw new ValidationException('Value must contain only letters and numbers.');
         }
     }

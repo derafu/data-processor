@@ -66,6 +66,21 @@ final class RemoveCharsRuleTest extends TestCase
                 ['@'],
                 'helloworld',
             ],
+            'multibyte_chars' => [
+                'á é ñ',
+                ['áñ'],
+                ' é ',
+            ],
+            'multibyte_char_that_shares_bytes' => [
+                'ñ Ñ',
+                ['Ñ'],
+                'ñ ',
+            ],
+            'zero_char' => [
+                'a0b00',
+                ['0'],
+                'ab',
+            ],
         ];
     }
 }

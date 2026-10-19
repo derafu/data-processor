@@ -133,6 +133,7 @@ final class DefaultRuleRegistrar implements RuleRegistrarInterface
             ->addValidatorRule('min_items', Validator\Array\MinItemsRule::class)
             ->addValidatorRule('notempty', Validator\Array\NotEmptyRule::class)
             ->addValidatorRule('unique', Validator\Array\UniqueRule::class)
+            ->addValidatorRule('unique_loose', Validator\Array\UniqueLooseRule::class)
 
             // Boolean validation.
             ->addValidatorRule('accepted', Validator\Boolean\AcceptedRule::class)
@@ -146,6 +147,10 @@ final class DefaultRuleRegistrar implements RuleRegistrarInterface
             ->addValidatorRule('between', Validator\Date\BetweenRule::class)
             ->addValidatorRule('date_equals', Validator\Date\DateEqualsRule::class)
             ->addValidatorRule('date_format', Validator\Date\DateFormatRule::class)
+            ->addValidatorRule('datetime_local', Validator\Date\DatetimeLocalRule::class)
+            ->addValidatorRule('month', Validator\Date\MonthRule::class)
+            ->addValidatorRule('time', Validator\Date\TimeRule::class)
+            ->addValidatorRule('week', Validator\Date\WeekRule::class)
             ->addValidatorRule('weekday', Validator\Date\WeekdayRule::class)
             ->addValidatorRule('weekend', Validator\Date\WeekendRule::class)
 
@@ -171,6 +176,7 @@ final class DefaultRuleRegistrar implements RuleRegistrarInterface
 
             // Internet validation.
             ->addValidatorRule('email', Validator\Internet\EmailRule::class)
+            ->addValidatorRule('host', Validator\Internet\HostRule::class)
             ->addValidatorRule('hostname', Validator\Internet\HostnameRule::class)
             ->addValidatorRule('ip', Validator\Internet\IpRule::class)
             ->addValidatorRule('url', Validator\Internet\UrlRule::class)
@@ -198,6 +204,7 @@ final class DefaultRuleRegistrar implements RuleRegistrarInterface
             ->addValidatorRule('alpha_num', Validator\String\AlphaNumRule::class)
             ->addValidatorRule('alpha', Validator\String\AlphaRule::class)
             ->addValidatorRule('base64', Validator\String\Base64Rule::class)
+            ->addValidatorRule('color', Validator\String\ColorRule::class)
             ->addValidatorRule('ends_with', Validator\String\EndsWithRule::class)
             ->addValidatorRule('json', Validator\String\JsonRule::class)
             ->addValidatorRule('length', Validator\String\LengthRule::class)

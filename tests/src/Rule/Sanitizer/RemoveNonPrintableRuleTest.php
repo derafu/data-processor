@@ -56,6 +56,34 @@ final class RemoveNonPrintableRuleTest extends TestCase
                 "Hello\tWorld\n",
                 "Hello\tWorld\n",
             ],
+            'zero_width_space' => [
+                "a\u{200B}b",
+                'ab',
+            ],
+            'bidi_override' => [
+                "file\u{202E}gpj.exe",
+                'filegpj.exe',
+            ],
+            'other_format_characters' => [
+                "a\u{00AD}b\u{2060}c\u{FEFF}d\u{200E}e",
+                'abcde',
+            ],
+            'c1_control_characters' => [
+                "a\u{0085}b\u{009F}c",
+                'abc',
+            ],
+            'zero_width_joiners_are_kept' => [
+                "\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}",
+                "\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}",
+            ],
+            'zero_width_non_joiner_is_kept' => [
+                "\u{0645}\u{200C}\u{06CC}",
+                "\u{0645}\u{200C}\u{06CC}",
+            ],
+            'visible_unicode_is_kept' => [
+                "Año \u{00A0}ñandú",
+                "Año \u{00A0}ñandú",
+            ],
             'null_bytes' => [
                 "Hello\x00\x00World",
                 'HelloWorld',

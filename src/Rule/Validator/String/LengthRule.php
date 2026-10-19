@@ -14,20 +14,23 @@ namespace Derafu\DataProcessor\Rule\Validator\String;
 
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
+use Derafu\DataProcessor\Trait\Rule\Validator\NumericParameterTrait;
 
 final class LengthRule implements ValidatorRuleInterface
 {
+    use NumericParameterTrait;
+
     public function validate(mixed $value, array $parameters = []): void
     {
         if (!is_string($value)) {
             throw new ValidationException('Value must be string.');
         }
 
-        if (empty($parameters[0])) {
+        if (!isset($parameters[0]) || $parameters[0] === '') {
             throw new ValidationException('Length parameter must be specified.');
         }
 
-        $length = (int)$parameters[0];
+        $length = $this->countParameter($parameters[0]);
 
         if (mb_strlen($value) !== $length) {
             throw new ValidationException([

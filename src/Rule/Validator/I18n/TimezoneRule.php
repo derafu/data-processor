@@ -30,8 +30,8 @@ final class TimezoneRule implements ValidatorRuleInterface
         }
 
         // Validate UTC offsets,
-        if (preg_match('/^UTC[+-]\d{1,2}$/', $value)) {
-            $offset = (int)substr($value, 4);
+        if (preg_match('/^UTC([+-])(\d{1,2})$/', $value, $matches)) {
+            $offset = (int)$matches[2] * ($matches[1] === '-' ? -1 : 1);
             if ($offset >= -12 && $offset <= 14) {
                 return;
             }

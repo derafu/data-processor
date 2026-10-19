@@ -16,12 +16,14 @@ use Derafu\DataProcessor\Contract\RuleParserInterface;
 use Derafu\DataProcessor\Contract\RuleRegistrarInterface;
 use Derafu\DataProcessor\Contract\RuleRegistryInterface;
 use Derafu\DataProcessor\Exception\RuleNotFoundException;
+use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Processor;
 use Derafu\DataProcessor\ProcessorFactory;
 use Derafu\DataProcessor\Registrar\CompositeRuleRegistrar;
 use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
 use Derafu\DataProcessor\Rule\Transformer\String\UppercaseRule;
 use Derafu\DataProcessor\Rule\Validator\String\MinLengthRule;
+use Derafu\DataProcessor\Rule\Validator\String\RequiredRule;
 use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
@@ -44,6 +46,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CompositeRuleRegistrar::class)]
 #[CoversClass(MinLengthRule::class)]
 #[CoversClass(UppercaseRule::class)]
+#[UsesClass(RequiredRule::class)]
 #[UsesClass(RuleSet::class)]
 final class ProcessorFactoryTest extends TestCase
 {
@@ -55,6 +58,22 @@ final class ProcessorFactoryTest extends TestCase
             'transform' => ['uppercase'],
             'validate' => ['min_length:3'],
         ]));
+    }
+
+    public function testOnlyTheRuleRequiredCountsAsRequired(): void
+    {
+        $processor = ProcessorFactory::create(
+            fn (RuleRegistryInterface $registry) => $registry->addValidatorRule('required_always', AlwaysRule::class)
+        );
+
+        // A rule whose name starts with `required` is not the rule `required`:
+        // the blank value skips it.
+        $this->assertNull($processor->process('', ['validate' => ['required_always:fail']]));
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Field is required.');
+
+        $processor->process('', ['validate' => ['required', 'required_always:fail']]);
     }
 
     public function testCreateAddsTheRulesOfAClosureToTheDefaultOnes(): void

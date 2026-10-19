@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Derafu\DataProcessor\Rule\Validator\File;
 
+use Derafu\DataProcessor\Abstract\Rule\Validator\File\AbstractFileRule;
 use Derafu\DataProcessor\Exception\ValidationException;
 
 final class FileRule extends AbstractFileRule

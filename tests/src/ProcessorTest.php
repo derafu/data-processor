@@ -49,6 +49,7 @@ use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use Derafu\DataProcessor\RuleSet;
+use Derafu\Support\Value;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -124,7 +125,7 @@ final class ProcessorTest extends TestCase
                 '123',
             ],
             'to_int' => [
-                '123.45',
+                '123.0',
                 'integer',
                 123,
             ],
@@ -429,7 +430,7 @@ final class ProcessorTest extends TestCase
         $result = $this->processor->process($value, $rules);
 
         if ($shouldPass) {
-            $this->assertSame($value, $result);
+            $this->assertSame(Value::isBlank($value) ? null : $value, $result);
         }
     }
 
@@ -521,7 +522,7 @@ final class ProcessorTest extends TestCase
     {
         // Test that not required rule (none rules) allows empty values.
         $result = $this->processor->process('', ['validate' => []]);
-        $this->assertSame('', $result);
+        $this->assertNull($result);
 
         $result = $this->processor->process(null, ['validate' => []]);
         $this->assertNull($result);
@@ -534,7 +535,7 @@ final class ProcessorTest extends TestCase
             'cast' => 'string',
             'validate' => ['min_length:5'],
         ]);
-        $this->assertSame('', $result);
+        $this->assertNull($result);
     }
 
     public function testNotRequiredRuleWithTransformation(): void
@@ -544,7 +545,7 @@ final class ProcessorTest extends TestCase
             'transform' => ['uppercase'],
             'validate' => ['min_length:5'],
         ]);
-        $this->assertSame('', $result);
+        $this->assertNull($result);
     }
 
     public function testNotRequiredRuleWithSanitization(): void
@@ -554,6 +555,57 @@ final class ProcessorTest extends TestCase
             'sanitize' => ['trim'],
             'validate' => ['min_length:5'],
         ]);
+        $this->assertNull($result);
+    }
+
+    #[DataProvider('blankValueDataProvider')]
+    public function testABlankValueSkipsCastTransformAndSanitize(mixed $value, string $cast): void
+    {
+        $result = $this->processor->process($value, [
+            'cast' => $cast,
+            'validate' => ['min_length:5'],
+        ]);
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * @return array<array-key, array<array-key, mixed>>
+     */
+    public static function blankValueDataProvider(): array
+    {
+        return [
+            'integer_empty_string' => ['', 'integer'],
+            'integer_null' => [null, 'integer'],
+            'float_empty_string' => ['', 'float'],
+            'date_empty_string' => ['', 'date'],
+            'boolean_empty_array' => [[], 'boolean'],
+        ];
+    }
+
+    public function testABlankValueThatIsRequiredOnlyRunsTheRequiredRule(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Field is required.');
+
+        $this->processor->process('', [
+            'cast' => 'integer',
+            'validate' => ['required', 'min_length:5'],
+        ]);
+    }
+
+    public function testAValueThatIsNotBlankIsStillCast(): void
+    {
+        $this->assertSame(5, $this->processor->process('5', ['cast' => 'integer']));
+    }
+
+    public function testAValueThatBecomesBlankAfterTheSanitizersIsNotValidated(): void
+    {
+        $result = $this->processor->process('@@', [
+            'sanitize' => ['remove_chars:@'],
+            'validate' => ['min_length:5'],
+        ]);
+
         $this->assertSame('', $result);
     }
 }

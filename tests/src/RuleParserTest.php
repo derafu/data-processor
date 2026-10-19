@@ -163,6 +163,26 @@ final class RuleParserTest extends TestCase
                     'validate' => ['required', 'email'],
                 ],
             ],
+            'string_repeated_groups_are_merged' => [
+                't(trim) t(lowercase|slug) s(strip_tags) s(spaces) v(required) v(email|min_length:3)',
+                [
+                    'transform' => ['trim', 'lowercase', 'slug'],
+                    'sanitize' => ['strip_tags', 'spaces'],
+                    'validate' => ['required', 'email', 'min_length:3'],
+                ],
+            ],
+            'string_repeated_group_and_rules_are_merged' => [
+                'v(required) email v(min_length:3)',
+                [
+                    'validate' => ['required', 'email', 'min_length:3'],
+                ],
+            ],
+            'string_repeated_cast_keeps_the_last' => [
+                'c(string) c(integer)',
+                [
+                    'cast' => 'integer',
+                ],
+            ],
         ];
     }
 }

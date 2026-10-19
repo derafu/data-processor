@@ -49,7 +49,11 @@ final class IntegerRuleTest extends TestCase
     {
         return [
             'integer' => [123, 123],
-            'float' => [123.45, 123],
+            'float_without_decimals' => [123.0, 123],
+            'numeric_string_with_zero_decimals' => ['1.0', 1],
+            'numeric_string_with_exponent' => ['1e2', 100],
+            'negative_numeric_string' => ['-5', -5],
+            'large_numeric_string' => ['9007199254740993', 9007199254740993],
             'numeric_string' => ['123', 123],
             'boolean_true' => [true, 1],
             'boolean_false' => [false, 0],
@@ -65,6 +69,12 @@ final class IntegerRuleTest extends TestCase
     public static function invalidIntegerCastDataProvider(): array
     {
         return [
+            'float_with_decimals' => [123.45],
+            'numeric_string_with_decimals' => ['1.9'],
+            'nan' => [NAN],
+            'infinite' => [INF],
+            'numeric_string_out_of_range' => ['1e30'],
+            'integer_string_out_of_range' => ['9223372036854775808'],
             'non_numeric_string' => ['hello'],
             'mixed_string' => ['123abc'],
             'array' => [[1,2,3]],

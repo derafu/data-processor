@@ -38,6 +38,35 @@ final class RegexRemoveRuleTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
+    public function testPatternThatIsNotValid(): void
+    {
+        $this->expectException(SanitizationException::class);
+        $this->expectExceptionMessage('Invalid regular expression pattern: preg_replace()');
+
+        $this->rule->sanitize('abc', ['/[/']);
+    }
+
+    public function testPatternThatIsNotValidDoesNotEmitWarnings(): void
+    {
+        $warnings = [];
+        set_error_handler(static function (int $level, string $message) use (&$warnings): bool {
+            $warnings[] = $message;
+
+            return true;
+        });
+
+        try {
+            $this->rule->sanitize('abc', ['/[/']);
+            $this->fail('A pattern that is not valid must be rejected.');
+        } catch (SanitizationException) {
+            // Expected.
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame([], $warnings);
+    }
+
     public function testNonStringValue(): void
     {
         $this->expectException(SanitizationException::class);
