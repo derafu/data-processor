@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace Derafu\DataProcessor;
 
 use Derafu\DataProcessor\Exception\ProcessorException;
+use Derafu\Value\Exception\TypeMismatchException;
+use Derafu\Value\ValueType;
 
 /**
  * The rules that are applied to a value, in the phases of the processor.
@@ -116,14 +118,14 @@ final readonly class RuleSet
      */
     private static function cast(mixed $value): ?string
     {
-        return match (true) {
-            $value === null => null,
-            is_string($value) => $value,
-            default => throw new ProcessorException([
+        try {
+            return ValueType::string()->nullable()->parse($value, 'cast');
+        } catch (TypeMismatchException $exception) {
+            throw new ProcessorException([
                 'The rule of the category "cast" must be a string, {given} given.',
                 'given' => get_debug_type($value),
-            ]),
-        };
+            ], previous: $exception);
+        }
     }
 
     /**
@@ -141,15 +143,14 @@ final readonly class RuleSet
             return explode('|', $value);
         }
 
-        if (is_array($value) && array_is_list($value) && array_filter($value, is_string(...)) === $value) {
-            /** @var list<string> $value */
-            return $value;
+        try {
+            return ValueType::listOf(ValueType::string())->parse($value, $category);
+        } catch (TypeMismatchException $exception) {
+            throw new ProcessorException([
+                'The rules of the category "{category}" must be a string or a list of strings, {given} given.',
+                'category' => $category,
+                'given' => get_debug_type($value),
+            ], previous: $exception);
         }
-
-        throw new ProcessorException([
-            'The rules of the category "{category}" must be a string or a list of strings, {given} given.',
-            'category' => $category,
-            'given' => get_debug_type($value),
-        ]);
     }
 }

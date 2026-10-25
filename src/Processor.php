@@ -15,7 +15,7 @@ namespace Derafu\DataProcessor;
 use Derafu\DataProcessor\Contract\ProcessorInterface;
 use Derafu\DataProcessor\Contract\RuleParserInterface;
 use Derafu\DataProcessor\Contract\RuleResolverInterface;
-use Derafu\Support\Value;
+use Derafu\Value\ValueInspector;
 
 /**
  * Main processor that applies rules in order.
@@ -47,7 +47,7 @@ final class Processor implements ProcessorInterface
         // sanitize. If the field is not required it is `null` and there is
         // nothing to validate; if it is required, the validators run and the
         // required rule says that the value is missing.
-        $isBlank = Value::isBlank($value);
+        $isBlank = ValueInspector::isBlank($value);
         if ($isBlank && !$hasRequiredRule) {
             return null;
         }
@@ -78,7 +78,7 @@ final class Processor implements ProcessorInterface
         foreach ($validationRules as $ruleString) {
             [$rule, $parameters] = $this->resolver->resolve('validate', $ruleString);
 
-            if (!$hasRequiredRule && Value::isBlank($value) && !$this->isRequiredRule($ruleString)) {
+            if (!$hasRequiredRule && ValueInspector::isBlank($value) && !$this->isRequiredRule($ruleString)) {
                 continue;
             }
 

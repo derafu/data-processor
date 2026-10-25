@@ -14,7 +14,7 @@ namespace Derafu\DataProcessor\Rule\Validator\Array;
 
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
-use Derafu\Support\Value;
+use Derafu\Value\ValueInspector;
 
 /**
  * Validates that some properties of an object are there when another one has
@@ -66,6 +66,6 @@ final class DependentRequiredRule implements ValidatorRuleInterface
      */
     private function hasValue(array $object, string $property): bool
     {
-        return array_key_exists($property, $object) && !Value::isBlank($object[$property]);
+        return array_key_exists($property, $object) && !ValueInspector::isBlank($object[$property]);
     }
 }

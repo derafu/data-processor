@@ -328,7 +328,7 @@ final class FileValidationTest extends TestCase
     {
         // The validator itself has no concept of "optional" — an empty array
         // is currently an invalid format. Skipping for optional fields is the
-        // pipeline's responsibility (Value::isBlank).
+        // pipeline's responsibility (ValueInspector::isBlank).
         $rule = $this->makeConcreteRule();
         $this->expectException(ValidationException::class);
         $rule->validate([]);

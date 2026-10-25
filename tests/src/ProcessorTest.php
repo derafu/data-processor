@@ -49,7 +49,7 @@ use Derafu\DataProcessor\RuleParser;
 use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use Derafu\DataProcessor\RuleSet;
-use Derafu\Support\Value;
+use Derafu\Value\ValueInspector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -430,7 +430,7 @@ final class ProcessorTest extends TestCase
         $result = $this->processor->process($value, $rules);
 
         if ($shouldPass) {
-            $this->assertSame(Value::isBlank($value) ? null : $value, $result);
+            $this->assertSame(ValueInspector::isBlank($value) ? null : $value, $result);
         }
     }
 

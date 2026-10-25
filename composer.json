@@ -29,6 +29,7 @@
         "ext-fileinfo": "*",
         "ext-intl": "*",
         "derafu/translation": "dev-main",
+        "derafu/value": "dev-main",
         "derafu/support": "dev-main",
         "nesbot/carbon": "^3.8",
         "symfony/mime": "^8.1"

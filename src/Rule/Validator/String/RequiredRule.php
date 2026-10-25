@@ -14,13 +14,13 @@ namespace Derafu\DataProcessor\Rule\Validator\String;
 
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
-use Derafu\Support\Value;
+use Derafu\Value\ValueInspector;
 
 final class RequiredRule implements ValidatorRuleInterface
 {
     public function validate(mixed $value, array $parameters = []): void
     {
-        if (Value::isBlank($value)) {
+        if (ValueInspector::isBlank($value)) {
             throw new ValidationException('Field is required.');
         }
     }
