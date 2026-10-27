@@ -16,7 +16,6 @@ use Carbon\Carbon;
 use Derafu\DataProcessor\Contract\ProcessorInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Processor;
-use Derafu\DataProcessor\ProcessorFactory;
 use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
 use Derafu\DataProcessor\Rule\Validator\Date\AfterOrEqualRule;
 use Derafu\DataProcessor\Rule\Validator\Date\AfterRule;
@@ -38,7 +37,6 @@ use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Processor::class)]
 #[CoversClass(DefaultRuleRegistrar::class)]
-#[CoversClass(ProcessorFactory::class)]
 #[CoversClass(RuleRegistry::class)]
 #[CoversClass(RuleResolver::class)]
 #[CoversClass(RuleParser::class)]
@@ -60,7 +58,9 @@ final class DateValidationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->processor = ProcessorFactory::create();
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $this->processor = new Processor(new RuleResolver($registry), new RuleParser());
         // Fix a "current" date for the tests.
         $this->now = Carbon::create(2024, 2, 15, 12, 0, 0);
         Carbon::setTestNow($this->now);

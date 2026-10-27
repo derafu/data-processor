@@ -1,0 +1,8 @@
+imports:
+    - { resource: '../../../resources/config/data-processor-services.yaml' }
+
+services:
+    Derafu\DataProcessor\Contract\RuleResolverInterface:
+        class: Derafu\TestsDataProcessor\Fixture\EqualsRuleResolver
+        arguments:
+            $registry: '@Derafu\DataProcessor\Contract\RuleRegistryInterface'

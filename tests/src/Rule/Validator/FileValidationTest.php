@@ -15,7 +15,6 @@ namespace Derafu\TestsDataProcessor\Rule\Validator\File;
 use Derafu\DataProcessor\Abstract\Rule\Validator\File\AbstractFileRule;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Processor;
-use Derafu\DataProcessor\ProcessorFactory;
 use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
 use Derafu\DataProcessor\Rule\Validator\File\FileRule;
 use Derafu\DataProcessor\Rule\Validator\File\ImageRule;
@@ -40,7 +39,6 @@ use RuntimeException;
 #[CoversClass(MimeTypeRule::class)]
 #[UsesClass(FileInfo::class)]
 #[UsesClass(Processor::class)]
-#[UsesClass(ProcessorFactory::class)]
 #[UsesClass(DefaultRuleRegistrar::class)]
 #[UsesClass(RuleParser::class)]
 #[UsesClass(RuleRegistry::class)]
@@ -609,7 +607,10 @@ final class FileValidationTest extends TestCase
     {
         $file = $this->psr7File(1, $this->fixture('image.png'));
 
-        $result = ProcessorFactory::create()->process($file, ['validate' => ['mimetype:image/*']]);
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
+        $result = $processor->process($file, ['validate' => ['mimetype:image/*']]);
 
         $this->assertSame($file, $result);
     }
@@ -1037,7 +1038,9 @@ final class FileValidationTest extends TestCase
 
     public function testMimetypeWithSeveralTypesThroughTheProcessor(): void
     {
-        $processor = ProcessorFactory::create();
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
         $file = $this->fileOfFixture('image.jpeg');
 
         $result = $processor->process($file, ['validate' => ['mimetype:image/png,image/jpeg']]);
@@ -1050,7 +1053,10 @@ final class FileValidationTest extends TestCase
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Invalid file type application/pdf. Allowed types: image/png, image/jpeg.');
 
-        ProcessorFactory::create()->process(
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
+        $processor->process(
             $this->fileOfFixture('document.pdf'),
             ['validate' => ['mimetype:image/png,image/jpeg']]
         );
@@ -1060,7 +1066,10 @@ final class FileValidationTest extends TestCase
     {
         $file = $this->fileOfFixture('data.csv');
 
-        $result = ProcessorFactory::create()->process($file, ['validate' => ['mimetype:text/csv']]);
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
+        $result = $processor->process($file, ['validate' => ['mimetype:text/csv']]);
 
         $this->assertSame($file, $result);
     }

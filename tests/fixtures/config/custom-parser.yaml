@@ -1,0 +1,6 @@
+imports:
+    - { resource: '../../../resources/config/data-processor-services.yaml' }
+
+services:
+    Derafu\DataProcessor\Contract\RuleParserInterface:
+        class: Derafu\TestsDataProcessor\Fixture\ContactRuleParser

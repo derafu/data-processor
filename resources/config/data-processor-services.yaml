@@ -1,28 +1,36 @@
 services:
 
-    # The default rules are always registered. The registrars tagged with
-    # `derafu_data_processor.rule_registrar` add more (e.g. the rules of a
-    # country). The tag is explicit because _instanceof does not propagate across
-    # imported files.
     Derafu\DataProcessor\Contract\ProcessorInterface:
-        factory: ['Derafu\DataProcessor\ProcessorFactory', 'create']
+        class: Derafu\DataProcessor\Processor
         arguments:
-            $configurator: '@Derafu\DataProcessor\Registrar\CompositeRuleRegistrar'
-
-    Derafu\DataProcessor\Registrar\CompositeRuleRegistrar:
-        arguments:
-            $registrars: !tagged_iterator derafu_data_processor.rule_registrar
+            $resolver: '@Derafu\DataProcessor\Contract\RuleResolverInterface'
+            $parser: '@Derafu\DataProcessor\Contract\RuleParserInterface'
 
     Derafu\DataProcessor\Contract\RuleResolverInterface:
         class: Derafu\DataProcessor\RuleResolver
         arguments:
             $registry: '@Derafu\DataProcessor\Contract\RuleRegistryInterface'
 
-    Derafu\DataProcessor\Contract\RuleRegistryInterface:
-        class: Derafu\DataProcessor\RuleRegistry
-
     Derafu\DataProcessor\Contract\RuleParserInterface:
         class: Derafu\DataProcessor\RuleParser
+
+    Derafu\DataProcessor\Contract\RuleRegistryInterface:
+        class: Derafu\DataProcessor\RuleRegistry
+        configurator:
+            - '@Derafu\DataProcessor\Contract\RuleRegistrarInterface'
+            - register
+
+    Derafu\DataProcessor\Contract\RuleRegistrarInterface:
+        class: Derafu\DataProcessor\Registrar\CompositeRuleRegistrar
+        arguments:
+            $registrars: !tagged_iterator derafu_data_processor.rule_registrar
+
+    # Default rules run before additional registrars with the normal priority 0.
+    # Additional registrars can replace rules registered earlier.
+    Derafu\DataProcessor\Registrar\DefaultRuleRegistrar:
+        tags:
+            - name: derafu_data_processor.rule_registrar
+              priority: 1000
 
     # Feeds resources/translations into the consuming app's Translator (the
     # app must pass $resourceProviders: !tagged_iterator

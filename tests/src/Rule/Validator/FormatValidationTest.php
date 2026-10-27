@@ -15,7 +15,6 @@ namespace Derafu\TestsDataProcessor\Rule\Validator;
 use Derafu\DataProcessor\Contract\ProcessorInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Processor;
-use Derafu\DataProcessor\ProcessorFactory;
 use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
 use Derafu\DataProcessor\Rule\Validator\Date\DatetimeLocalRule;
 use Derafu\DataProcessor\Rule\Validator\Date\MonthRule;
@@ -47,7 +46,6 @@ use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Processor::class)]
 #[CoversClass(DefaultRuleRegistrar::class)]
-#[CoversClass(ProcessorFactory::class)]
 #[CoversClass(RuleRegistry::class)]
 #[CoversClass(RuleResolver::class)]
 #[CoversClass(RuleParser::class)]
@@ -77,7 +75,9 @@ final class FormatValidationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->processor = ProcessorFactory::create();
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $this->processor = new Processor(new RuleResolver($registry), new RuleParser());
     }
 
     #[DataProvider('emailValidationProvider')]

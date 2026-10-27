@@ -1,0 +1,6 @@
+imports:
+    - { resource: '../../../resources/config/data-processor-services.yaml' }
+
+services:
+    Derafu\TestsDataProcessor\Fixture\OverrideRuleRegistrar:
+        tags: ['derafu_data_processor.rule_registrar']

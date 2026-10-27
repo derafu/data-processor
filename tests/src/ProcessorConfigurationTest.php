@@ -18,7 +18,6 @@ use Derafu\DataProcessor\Contract\RuleRegistryInterface;
 use Derafu\DataProcessor\Exception\RuleNotFoundException;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Processor;
-use Derafu\DataProcessor\ProcessorFactory;
 use Derafu\DataProcessor\Registrar\CompositeRuleRegistrar;
 use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
 use Derafu\DataProcessor\Rule\Transformer\String\UppercaseRule;
@@ -34,10 +33,8 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The factory builds the processor with the default rules and the ones that the
- * application adds.
+ * Processors use the rules registered by the application and its chosen parser.
  */
-#[CoversClass(ProcessorFactory::class)]
 #[CoversClass(Processor::class)]
 #[CoversClass(RuleParser::class)]
 #[CoversClass(RuleResolver::class)]
@@ -48,11 +45,13 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(UppercaseRule::class)]
 #[UsesClass(RequiredRule::class)]
 #[UsesClass(RuleSet::class)]
-final class ProcessorFactoryTest extends TestCase
+final class ProcessorConfigurationTest extends TestCase
 {
-    public function testCreateDefaultHasTheDefaultRules(): void
+    public function testDefaultRegistrarProvidesTheDefaultRules(): void
     {
-        $processor = ProcessorFactory::createDefault();
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
 
         $this->assertSame('ABC', $processor->process('abc', [
             'transform' => ['uppercase'],
@@ -62,9 +61,10 @@ final class ProcessorFactoryTest extends TestCase
 
     public function testOnlyTheRuleRequiredCountsAsRequired(): void
     {
-        $processor = ProcessorFactory::create(
-            fn (RuleRegistryInterface $registry) => $registry->addValidatorRule('required_always', AlwaysRule::class)
-        );
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $registry->addValidatorRule('required_always', AlwaysRule::class);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
 
         // A rule whose name starts with `required` is not the rule `required`:
         // the blank value skips it.
@@ -76,38 +76,42 @@ final class ProcessorFactoryTest extends TestCase
         $processor->process('', ['validate' => ['required', 'required_always:fail']]);
     }
 
-    public function testCreateAddsTheRulesOfAClosureToTheDefaultOnes(): void
+    public function testAdditionalRulesExtendTheDefaultOnes(): void
     {
-        $processor = ProcessorFactory::create(
-            fn (RuleRegistryInterface $registry) => $registry->addValidatorRule('always', AlwaysRule::class)
-        );
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $registry->addValidatorRule('always', AlwaysRule::class);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
 
         $this->assertSame('abc', $processor->process('abc', [
             'validate' => ['min_length:3', 'always'],
         ]));
     }
 
-    public function testCreateAddsTheRulesOfARegistrarToTheDefaultOnes(): void
+    public function testCompositeRegistrarAddsRulesToTheDefaultOnes(): void
     {
-        $processor = ProcessorFactory::create(new CompositeRuleRegistrar([
+        $registry = new RuleRegistry();
+        (new CompositeRuleRegistrar([
+            new DefaultRuleRegistrar(),
             new class () implements RuleRegistrarInterface {
                 public function register(RuleRegistryInterface $registry): void
                 {
                     $registry->addValidatorRule('always', AlwaysRule::class);
                 }
             },
-        ]));
+        ]))->register($registry);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
 
         $this->assertSame('abc', $processor->process('abc', [
             'validate' => ['min_length:3', 'always'],
         ]));
     }
 
-    public function testCreateCustomHasOnlyTheRulesThatItIsGiven(): void
+    public function testCustomRegistryHasOnlyTheRulesThatItIsGiven(): void
     {
-        $processor = ProcessorFactory::createCustom(
-            fn (RuleRegistryInterface $registry) => $registry->addValidatorRule('always', AlwaysRule::class)
-        );
+        $registry = new RuleRegistry();
+        $registry->addValidatorRule('always', AlwaysRule::class);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
 
         $this->assertSame('abc', $processor->process('abc', ['validate' => ['always']]));
 
@@ -115,15 +119,15 @@ final class ProcessorFactoryTest extends TestCase
         $processor->process('abc', ['validate' => ['min_length:3']]);
     }
 
-    public function testCreateWithoutDefaultRulesDoesNotRegisterThem(): void
+    public function testEmptyRegistryDoesNotProvideDefaultRules(): void
     {
-        $processor = ProcessorFactory::create(withDefaultRules: false);
+        $processor = new Processor(new RuleResolver(new RuleRegistry()), new RuleParser());
 
         $this->expectException(RuleNotFoundException::class);
         $processor->process('abc', ['validate' => ['min_length:3']]);
     }
 
-    public function testCreateUsesTheParserThatItIsGiven(): void
+    public function testProcessorUsesTheParserThatItIsGiven(): void
     {
         $parser = $this->createMock(RuleParserInterface::class);
         $parser->expects($this->once())
@@ -132,7 +136,9 @@ final class ProcessorFactoryTest extends TestCase
             ->willReturn(['validate' => ['min_length:3']])
         ;
 
-        $processor = ProcessorFactory::create(parser: $parser);
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $processor = new Processor(new RuleResolver($registry), $parser);
 
         $this->assertSame('abc', $processor->process('abc', 'ignored'));
     }

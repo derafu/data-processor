@@ -18,7 +18,6 @@ use Derafu\DataProcessor\Contract\RuleRegistryInterface;
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Processor;
-use Derafu\DataProcessor\ProcessorFactory;
 use Derafu\DataProcessor\Registrar\CompositeRuleRegistrar;
 use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
 use Derafu\DataProcessor\Rule\Validator\String\MinLengthRule;
@@ -35,7 +34,6 @@ use PHPUnit\Framework\TestCase;
  * The registrars of the packages are applied together, in order.
  */
 #[CoversClass(CompositeRuleRegistrar::class)]
-#[CoversClass(ProcessorFactory::class)]
 #[CoversClass(DefaultRuleRegistrar::class)]
 #[CoversClass(RuleRegistry::class)]
 #[CoversClass(Processor::class)]
@@ -108,9 +106,12 @@ final class CompositeRuleRegistrarTest extends TestCase
 
     public function testTheProcessorHasTheDefaultRulesAndTheOnesOfTheRegistrars(): void
     {
-        $processor = ProcessorFactory::create(new CompositeRuleRegistrar([
+        $registry = new RuleRegistry();
+        (new CompositeRuleRegistrar([
+            new DefaultRuleRegistrar(),
             $this->registrar('always', AlwaysRule::class),
-        ]));
+        ]))->register($registry);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
 
         // A rule of the package and the one of the registrar.
         $this->assertSame('abc', $processor->process('abc', [

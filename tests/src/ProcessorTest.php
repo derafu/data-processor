@@ -16,7 +16,6 @@ use Carbon\Carbon;
 use Derafu\DataProcessor\Contract\ProcessorInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Processor;
-use Derafu\DataProcessor\ProcessorFactory;
 use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
 use Derafu\DataProcessor\Rule\Caster\BooleanRule;
 use Derafu\DataProcessor\Rule\Caster\DateRule;
@@ -57,7 +56,6 @@ use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Processor::class)]
 #[CoversClass(DefaultRuleRegistrar::class)]
-#[CoversClass(ProcessorFactory::class)]
 #[CoversClass(RuleRegistry::class)]
 #[CoversClass(RuleResolver::class)]
 #[CoversClass(RuleParser::class)]
@@ -95,7 +93,9 @@ final class ProcessorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->processor = ProcessorFactory::create();
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $this->processor = new Processor(new RuleResolver($registry), new RuleParser());
     }
 
     #[DataProvider('castingProvider')]

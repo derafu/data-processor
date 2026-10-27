@@ -26,14 +26,13 @@ use Derafu\DataProcessor\RuleRegistry;
 use Derafu\DataProcessor\RuleResolver;
 use Derafu\DataProcessor\Translation\DataProcessorTranslationResourceProvider;
 use Derafu\TestsDataProcessor\Registrar\AlwaysRule;
-use Derafu\Translation\TranslatorFactory;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Translation\Translator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Imports the package configuration, compiles a real container and exercises
@@ -43,11 +42,13 @@ use Symfony\Component\Translation\Translator;
 #[CoversNothing]
 final class ServicesTest extends TestCase
 {
-    private function loadContainer(): ContainerBuilder
+    private function loadContainer(?string $consumerConfiguration = null): ContainerBuilder
     {
         $container = new ContainerBuilder();
-        (new YamlFileLoader($container, new FileLocator(dirname(__DIR__, 2) . '/resources/config')))
-            ->load('data-processor-services.yaml');
+        $configuration = $consumerConfiguration === null
+            ? dirname(__DIR__, 2) . '/resources/config/data-processor-services.yaml'
+            : dirname(__DIR__) . '/fixtures/config/' . $consumerConfiguration;
+        (new YamlFileLoader($container, new FileLocator()))->load($configuration);
 
         return $container;
     }
@@ -73,7 +74,7 @@ final class ServicesTest extends TestCase
             RuleResolverInterface::class => RuleResolver::class,
             RuleRegistryInterface::class => RuleRegistry::class,
             RuleParserInterface::class => RuleParser::class,
-            CompositeRuleRegistrar::class => CompositeRuleRegistrar::class,
+            RuleRegistrarInterface::class => CompositeRuleRegistrar::class,
             DataProcessorTranslationResourceProvider::class => DataProcessorTranslationResourceProvider::class,
         ] as $id => $class) {
             self::assertInstanceOf($class, $container->get($id));
@@ -92,6 +93,11 @@ final class ServicesTest extends TestCase
         [$rule, $parameters] = $resolver->resolve('validate', 'custom:fail');
         self::assertSame($registry->getValidatorRule('custom'), $rule);
         self::assertSame(['fail'], $parameters);
+        $processor = $container->get(ProcessorInterface::class);
+        self::assertInstanceOf(ProcessorInterface::class, $processor);
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Always fails.');
+        $processor->process('abc', ['validate' => ['custom:fail']]);
     }
 
     public function testTheParserAndProcessorApplyTheDefaultRules(): void
@@ -100,7 +106,7 @@ final class ServicesTest extends TestCase
         $this->compile($container);
         $parser = $container->get(RuleParserInterface::class);
         self::assertInstanceOf(RuleParserInterface::class, $parser);
-        $rules = $parser->parse('t(uppercase) v(required|min_length:3)');
+        $rules = 't(uppercase) v(required|min_length:3)';
         $processor = $container->get(ProcessorInterface::class);
         self::assertInstanceOf(ProcessorInterface::class, $processor);
         self::assertSame('ABC', $processor->process('abc', $rules));
@@ -112,20 +118,8 @@ final class ServicesTest extends TestCase
 
     public function testTaggedRegistrarsExtendTheProcessorWithoutReplacingTheDefaults(): void
     {
-        $container = $this->loadContainer();
-        $registrar = new class () implements RuleRegistrarInterface {
-            public function register(RuleRegistryInterface $registry): void
-            {
-                $registry->addValidatorRule('custom', AlwaysRule::class);
-            }
-        };
-        // An application's registrar is a real service, not a mock.
-        $container->register('app.rule_registrar', RuleRegistrarInterface::class)
-            ->setSynthetic(true)
-            ->addTag('derafu_data_processor.rule_registrar');
-        self::assertArrayHasKey('app.rule_registrar', $container->findTaggedServiceIds('derafu_data_processor.rule_registrar'));
+        $container = $this->loadContainer('custom-registrar.yaml');
         $this->compile($container);
-        $container->set('app.rule_registrar', $registrar);
         $processor = $container->get(ProcessorInterface::class);
         self::assertInstanceOf(ProcessorInterface::class, $processor);
         self::assertSame('ABC', $processor->process('abc', [
@@ -138,19 +132,60 @@ final class ServicesTest extends TestCase
         $processor->process('abc', ['validate' => ['custom:fail']]);
     }
 
+    public function testTheProcessorUsesTheParserOverriddenByTheConsumer(): void
+    {
+        $container = $this->loadContainer('custom-parser.yaml');
+        $this->compile($container);
+        $processor = $container->get(ProcessorInterface::class);
+        self::assertInstanceOf(ProcessorInterface::class, $processor);
+        self::assertSame('test@example.com', $processor->process(' TEST@EXAMPLE.COM ', 'contact_email'));
+
+        $this->expectException(ValidationException::class);
+        $processor->process('invalid-email', 'contact_email');
+    }
+
+    public function testTheProcessorUsesTheResolverOverriddenByTheConsumer(): void
+    {
+        $container = $this->loadContainer('custom-resolver.yaml');
+        $this->compile($container);
+        $processor = $container->get(ProcessorInterface::class);
+        self::assertInstanceOf(ProcessorInterface::class, $processor);
+        self::assertSame('ABC', $processor->process('abc', [
+            'transform' => ['uppercase'],
+            'validate' => ['min_length=3'],
+        ]));
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be at least 3 characters long.');
+        $processor->process('ab', ['validate' => ['min_length=3']]);
+    }
+
+    public function testTaggedRegistrarsCanReplaceADefaultRuleAndPreserveOtherDefaults(): void
+    {
+        $container = $this->loadContainer('override-rule.yaml');
+        $this->compile($container);
+        $processor = $container->get(ProcessorInterface::class);
+        self::assertInstanceOf(ProcessorInterface::class, $processor);
+        self::assertSame('AB', $processor->process('ab', [
+            'transform' => ['uppercase'],
+            'validate' => ['required', 'min_length:100'],
+        ]));
+        self::assertSame(42, $processor->process('42', ['cast' => 'integer']));
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Always fails.');
+        $processor->process('abc', ['validate' => ['min_length:fail']]);
+    }
+
     public function testTaggedTranslationResourcesAreUsableByTheConsumer(): void
     {
-        $container = $this->loadContainer();
+        $container = $this->loadContainer('translation.yaml');
         self::assertArrayHasKey(
             DataProcessorTranslationResourceProvider::class,
             $container->findTaggedServiceIds('derafu_translation.resource_provider')
         );
-        // The consumer owns its translator and chooses its locale.
-        $container->register('app.translator', Translator::class)
-            ->setFactory([TranslatorFactory::class, 'create'])
-            ->setArguments(['es', ['en'], new TaggedIteratorArgument('derafu_translation.resource_provider')]);
         $this->compile($container);
-        $translator = $container->get('app.translator');
+        $translator = $container->get(TranslatorInterface::class);
         self::assertInstanceOf(Translator::class, $translator);
         $rule = new MinLengthRule();
         try {

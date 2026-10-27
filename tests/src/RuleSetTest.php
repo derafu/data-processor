@@ -15,7 +15,6 @@ namespace Derafu\TestsDataProcessor;
 use Derafu\DataProcessor\Exception\ProcessorException;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\Processor;
-use Derafu\DataProcessor\ProcessorFactory;
 use Derafu\DataProcessor\Registrar\DefaultRuleRegistrar;
 use Derafu\DataProcessor\Rule\Caster\StringRule;
 use Derafu\DataProcessor\Rule\Sanitizer\TrimRule;
@@ -40,7 +39,6 @@ use stdClass;
 #[CoversClass(RuleSet::class)]
 #[CoversClass(RuleParser::class)]
 #[CoversClass(Processor::class)]
-#[UsesClass(ProcessorFactory::class)]
 #[UsesClass(DefaultRuleRegistrar::class)]
 #[UsesClass(RuleRegistry::class)]
 #[UsesClass(RuleResolver::class)]
@@ -166,13 +164,18 @@ final class RuleSetTest extends TestCase
 
         $this->expectException(ProcessorException::class);
 
-        ProcessorFactory::create()->process('x', ['validat' => 'required']);
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
+        $processor->process('x', ['validat' => 'required']);
     }
 
     #[Test]
     public function shouldProcessWithARuleSetThatWasAlreadyBuilt(): void
     {
-        $processor = ProcessorFactory::create();
+        $registry = new RuleRegistry();
+        (new DefaultRuleRegistrar())->register($registry);
+        $processor = new Processor(new RuleResolver($registry), new RuleParser());
         $rules = new RuleSet(cast: 'string', transform: ['lowercase'], sanitize: ['trim'], validate: ['min_length:3']);
 
         $this->assertSame('abc', $processor->process('  ABC ', $rules));
