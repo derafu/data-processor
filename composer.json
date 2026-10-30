@@ -26,13 +26,11 @@
     },
     "require": {
         "php": "^8.5",
-        "ext-fileinfo": "*",
         "ext-intl": "*",
+        "derafu/file": "dev-main",
         "derafu/translation": "dev-main",
         "derafu/value": "dev-main",
-        "derafu/support": "dev-main",
-        "nesbot/carbon": "^3.8",
-        "symfony/mime": "^8.1"
+        "nesbot/carbon": "^3.8"
     },
     "require-dev": {
         "ext-xdebug": "*",

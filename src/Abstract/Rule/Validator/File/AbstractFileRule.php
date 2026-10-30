@@ -15,7 +15,7 @@ namespace Derafu\DataProcessor\Abstract\Rule\Validator\File;
 use Derafu\DataProcessor\Contract\ValidatorRuleInterface;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\ValueObject\FileInfo;
-use Derafu\Support\File;
+use Derafu\File\ByteSize;
 use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
 
@@ -32,7 +32,7 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
      *
      * The parameters are `max_size=<size>` and `min_size=<size>`, in any order.
      * A parameter that is only a size, as `2M`, is the maximum size: it is the
-     * short form of `max_size=2M`. The sizes are read as `File::parseSize()`
+     * short form of `max_size=2M`. The sizes are read as `ByteSize::parse()`
      * does (`2048`, `2M`, `1.5Mi`).
      *
      * The minimum size is 1 byte unless `min_size` is given, so a file that is
@@ -338,13 +338,13 @@ abstract class AbstractFileRule implements ValidatorRuleInterface
     /**
      * Reads a size that a rule has as a parameter.
      *
-     * @param string $size The size, as `File::parseSize()` reads it (`2048`,
+     * @param string $size The size, as `ByteSize::parse()` reads it (`2048`,
      * `2M`, `1.5Mi`).
      * @return int The size in bytes.
      * @throws ValidationException If the size is not valid.
      */
     protected function parseSize(string $size): int
     {
-        return File::parseSize($size) ?? throw new ValidationException('Invalid size.');
+        return ByteSize::parse($size) ?? throw new ValidationException('Invalid size.');
     }
 }

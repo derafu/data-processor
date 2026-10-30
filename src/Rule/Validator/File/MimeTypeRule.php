@@ -15,7 +15,8 @@ namespace Derafu\DataProcessor\Rule\Validator\File;
 use Derafu\DataProcessor\Abstract\Rule\Validator\File\AbstractFileRule;
 use Derafu\DataProcessor\Exception\ValidationException;
 use Derafu\DataProcessor\ValueObject\FileInfo;
-use Derafu\Support\File;
+use Derafu\File\Mime;
+use Derafu\File\Path;
 
 /**
  * Validates that the type of the file is one of the allowed.
@@ -69,12 +70,12 @@ final class MimeTypeRule extends AbstractFileRule
     private function typeOf(FileInfo $file): ?string
     {
         if ($file->path !== null) {
-            return File::mimetype($file->path) ?: null;
+            return Mime::fromFile($file->path);
         }
 
         $content = $file->upload !== null ? $this->startOf($file->upload) : null;
 
-        return $content !== null ? (File::mimetypeFromContent($content) ?: null) : null;
+        return $content !== null ? Mime::fromContent($content) : null;
     }
 
     /**
@@ -102,7 +103,7 @@ final class MimeTypeRule extends AbstractFileRule
             return false;
         }
 
-        $typesOfTheExtension = File::mimetypesFromExtension(pathinfo($name, PATHINFO_EXTENSION));
+        $typesOfTheExtension = Mime::typesOfExtension(Path::extension($name));
         foreach ($allowedTypes as $allowedType) {
             if (str_starts_with($allowedType, 'text/') && in_array($allowedType, $typesOfTheExtension, true)) {
                 return true;
