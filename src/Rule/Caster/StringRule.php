@@ -14,6 +14,7 @@ namespace Derafu\DataProcessor\Rule\Caster;
 
 use Derafu\DataProcessor\Contract\CasterRuleInterface;
 use Derafu\DataProcessor\Exception\CastingException;
+use Stringable;
 
 final class StringRule implements CasterRuleInterface
 {
@@ -40,7 +41,7 @@ final class StringRule implements CasterRuleInterface
         }
 
         if (is_object($value)) {
-            if (method_exists($value, '__toString')) {
+            if ($value instanceof Stringable) {
                 return $value->__toString();
             }
             throw new CastingException(

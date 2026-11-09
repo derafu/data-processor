@@ -56,6 +56,7 @@ final class LocaleRule implements ValidatorRuleInterface
      */
     private function getLocales(): array
     {
+        /** @var list<string>|false $locales */
         $locales = ResourceBundle::getLocales('');
 
         return $locales === false ? throw new ProcessorException('The list of locales can not be read.') : $locales;
